@@ -125,7 +125,13 @@
 			<version>${spring.version}</version>
 			<scope>provided</scope>
 		</dependency>
-		
+
+		<dependency>
+			<groupId>commons-beanutils</groupId>
+			<artifactId>commons-beanutils</artifactId>
+			<version>1.9.2</version>
+		</dependency>
+
 		<!--  jee dependency -->
 		<dependency>
 			<groupId>javax.portlet</groupId>

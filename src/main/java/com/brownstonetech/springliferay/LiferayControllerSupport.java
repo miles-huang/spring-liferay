@@ -12,6 +12,17 @@ import com.liferay.portal.kernel.util.WebKeys;
 import com.liferay.portal.security.permission.PermissionChecker;
 import com.liferay.portal.theme.ThemeDisplay;
 
+/**
+ * Controller base class.
+ * It put some common liferay specific request content information as model attributes
+ * <ul>
+ * <li>themeDisplay: The {@link ThemeDisplay} of current request.</li>
+ * <li>permissionChecker: The {@link PermissionChecker} of current request.</li>
+ * </ul>
+ * 
+ * @author Miles Huang
+ *
+ */
 public class LiferayControllerSupport {
 	
 	private static final String ERROR = "ERROR";
@@ -26,17 +37,17 @@ public class LiferayControllerSupport {
 	 * This always existing modelAttribute is for binding global error messages.
 	 * @return
 	 */
-	@ModelAttribute(SpringIntegrationWebKeys.ERROR)
+	@ModelAttribute(SpringLiferayWebKeys.ERROR)
 	public Object getError() {
 		return ERROR;
 	}
 
-	@ModelAttribute("themeDisplay")
+	@ModelAttribute(SpringLiferayWebKeys.THEME_DISPLAY)
 	public ThemeDisplay themeDisplay(PortletRequest request) {
 		return getThemeDisplay(request);
 	}
 	
-	@ModelAttribute("permissionChecker")
+	@ModelAttribute(SpringLiferayWebKeys.PERMISSION_CHECKER)
 	public PermissionChecker permissionChecker(PortletRequest request) {
 		try {
 			return getPermissionChecker(request);
