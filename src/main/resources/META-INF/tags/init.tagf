@@ -1,5 +1,5 @@
-<%--
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
+<%--
 <%@ taglib uri="http://java.sun.com/jsp/jstl/fmt" prefix="fmt" %>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/functions" prefix="fn" %>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/sql" prefix="sql" %>
@@ -286,9 +286,7 @@ tag import="javax.portlet.WindowState" %>
 
 <%@ tag import="org.springframework.web.servlet.support.BindStatus" %>
 
-<liferay-theme:defineObjects />
-
-<%
+<%--
 PortletRequest portletRequest = (PortletRequest)request.getAttribute(JavaConstants.JAVAX_PORTLET_REQUEST);
 
 PortletResponse portletResponse = (PortletResponse)request.getAttribute(JavaConstants.JAVAX_PORTLET_RESPONSE);
@@ -302,5 +300,5 @@ if ((portletResponse != null) && auiFormUseNamespace) {
 }
 
 String currentURL = PortalUtil.getCurrentURL(request);
-%>
+--%>
 

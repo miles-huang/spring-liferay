@@ -4,8 +4,9 @@
 <%@ include file="../init.tagf" %>
 <%@ taglib uri="http://liferay.com/tld/ui" prefix="liferay-ui" %>
 
+<portlet:defineObjects/>
 <%
-java.util.Iterator<String> errors = com.liferay.portal.kernel.servlet.SessionErrors.iterator(portletRequest);
+java.util.Iterator<String> errors = com.liferay.portal.kernel.servlet.SessionErrors.iterator(renderRequest);
 while (errors.hasNext()) {
 	String key = errors.next();
 %>

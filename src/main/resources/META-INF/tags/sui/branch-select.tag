@@ -99,7 +99,7 @@
 
 <%@ include file="../init.tagf" %>
 <%@ taglib uri="http://liferay.com/tld/aui" prefix="aui" %>
-
+<%@ tag import="com.liferay.portal.kernel.json.JSONFactoryUtil" %>
 
 <spring:bind path="${name}">
 	<%
@@ -229,6 +229,7 @@
 		   });
 	});
 </aui:script>
+<%-- 
 <%!
 private static Object _deserialize(Object obj) {
 	if (obj != null) {
@@ -256,3 +257,4 @@ private static void _updateOptions(Map<String, Object> options, String key, Obje
 	}
 }
 %>
+--%>
