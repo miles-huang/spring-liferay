@@ -82,6 +82,16 @@
 						</goals>
 					</execution>
 				</executions>
+				<configuration>
+					<taglibs>
+						<taglib>
+							<description>Spring MVC Liferay UI support</description>
+							<shortName>sui</shortName>
+							<uri>http://brownstonetech.com/liferay/sui</uri>
+							<tagdir>src/main/resources/META-INF/tags/sui</tagdir>
+						</taglib>
+					</taglibs>
+				</configuration>
 			</plugin>
 		</plugins>
 		<pluginManagement>
@@ -124,13 +134,14 @@
 		<dependency>
 			<groupId>junit</groupId>
 			<artifactId>junit</artifactId>
-			<version>3.8.1</version>
+			<version>${junit.version}</version>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
 			<groupId>com.liferay.portal</groupId>
 			<artifactId>portal-client</artifactId>
 			<version>${liferay.version}</version>
+			<scope>provided</scope>
 		</dependency>
 		<dependency>
 			<groupId>com.liferay.portal</groupId>
@@ -142,21 +153,25 @@
 			<groupId>com.liferay.portal</groupId>
 			<artifactId>util-bridges</artifactId>
 			<version>${liferay.version}</version>
+			<scope>provided</scope>
 		</dependency>
 		<dependency>
 			<groupId>com.liferay.portal</groupId>
 			<artifactId>util-java</artifactId>
 			<version>${liferay.version}</version>
+			<scope>provided</scope>
 		</dependency>
 		<dependency>
 			<groupId>com.liferay.portal</groupId>
 			<artifactId>util-slf4j</artifactId>
 			<version>${liferay.version}</version>
+			<scope>provided</scope>
 		</dependency>
 		<dependency>
 			<groupId>com.liferay.portal</groupId>
 			<artifactId>util-taglib</artifactId>
 			<version>${liferay.version}</version>
+			<scope>provided</scope>
 		</dependency>
 
 		<!-- spring dependency -->
@@ -177,6 +192,7 @@
 			<groupId>commons-beanutils</groupId>
 			<artifactId>commons-beanutils</artifactId>
 			<version>1.9.2</version>
+			<scope>provided</scope>
 		</dependency>
 
 		<!--  jee dependency -->
@@ -184,6 +200,7 @@
 			<groupId>javax</groupId>
 			<artifactId>javaee-api</artifactId>
 			<version>6.0</version>
+			<scope>provided</scope>
 		</dependency>
 		<dependency>
 			<groupId>javax.portlet</groupId>
