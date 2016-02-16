@@ -15,7 +15,7 @@
 		<jdk.version>1.6</jdk.version>
 		<junit.version>4.11</junit.version>
 		<liferay.version>6.2.3</liferay.version>
-		<liferay.maven.plugin.version>6.2.2</liferay.maven.plugin.version>
+		<liferay.maven.plugin.version>6.2.3</liferay.maven.plugin.version>
 		<spring.version>3.0.7.RELEASE</spring.version>
 	</properties>
 
@@ -44,11 +44,13 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-jar-plugin</artifactId>
+				<version>2.5</version>
 			</plugin>
 
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-source-plugin</artifactId>
+				<version>2.4</version>
 				<executions>
 					<execution>
 						<id>attach-sources</id>
@@ -62,6 +64,7 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-javadoc-plugin</artifactId>
+				<version>2.10.3</version>
 				<executions>
 					<execution>
 						<id>attach-javadocs</id>
@@ -71,10 +74,11 @@
 					</execution>
 				</executions>
 			</plugin>
-			
+
 			<plugin>
 				<groupId>net.sourceforge.maven-taglib</groupId>
 				<artifactId>maven-taglib-plugin</artifactId>
+				<version>2.4</version>
 				<executions>
 					<execution>
 						<goals>
@@ -83,6 +87,7 @@
 					</execution>
 				</executions>
 				<configuration>
+					<outputDir>${project.build.directory}/generated-resources/META-INF</outputDir>
 					<taglibs>
 						<taglib>
 							<description>Spring MVC Liferay UI support</description>
@@ -93,10 +98,35 @@
 					</taglibs>
 				</configuration>
 			</plugin>
+
+			<plugin>
+				<groupId>org.codehaus.mojo</groupId>
+				<artifactId>build-helper-maven-plugin</artifactId>
+				<version>1.10</version>
+				<executions>
+					<execution>
+						<id>add-resource</id>
+						<phase>generate-resources</phase>
+						<goals>
+							<goal>add-resource</goal>
+						</goals>
+						<configuration>
+							<resources>
+								<resource>
+									<directory>
+										${project.build.directory}/generated-resources
+									</directory>
+								</resource>
+							</resources>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
 		</plugins>
 		<pluginManagement>
 			<plugins>
-				<!--This plugin's configuration is used to store Eclipse m2e settings only. It has no influence on the Maven build itself.-->
+				<!--This plugin's configuration is used to store Eclipse m2e settings 
+					only. It has no influence on the Maven build itself. -->
 				<plugin>
 					<groupId>org.eclipse.m2e</groupId>
 					<artifactId>lifecycle-mapping</artifactId>
@@ -195,7 +225,7 @@
 			<scope>provided</scope>
 		</dependency>
 
-		<!--  jee dependency -->
+		<!-- jee dependency -->
 		<dependency>
 			<groupId>javax</groupId>
 			<artifactId>javaee-api</artifactId>

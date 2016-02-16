@@ -64,7 +64,7 @@ public abstract class LiferaySearchControllerSupport<E, S extends DisplayTerms> 
 					themeDisplay.getCompanyId(),
 					themeDisplay.getUserId(),
 					searchContainer,
-					s, modelMap);
+					s, bindingResult, modelMap);
 		} catch (Exception e) {
 			SessionErrors.add(portletRequest, "error.internal");
 			_log.error("Fail to do entity search", e);
@@ -99,6 +99,9 @@ public abstract class LiferaySearchControllerSupport<E, S extends DisplayTerms> 
 		Iterator<Map.Entry<String,String[]>> iter = params.entrySet().iterator();
 		while ( iter.hasNext()) {
 			Map.Entry<String,String[]> entry = iter.next();
+			// Exclude some parameters we don't want to inherit
+			// for search form submit URL and also
+			// Links in the search result table.
 			if ( entry.getKey().equals("formDate")) iter.remove();
 			if ( entry.getKey().endsWith("searchContainerPrimaryKeys")) iter.remove();
 		}
@@ -169,8 +172,8 @@ public abstract class LiferaySearchControllerSupport<E, S extends DisplayTerms> 
 	 */
 	protected abstract void doSearch(long companyId,
 			long userId,
-			SearchContainer<E> searchContainer,
-			S searchTerms, ModelMap modelMap) throws Exception;
+			SearchContainer<E> searchContainer, 
+			S searchTerms, BindingResult bindingResult, ModelMap modelMap) throws Exception;
 	
 	/**
 	 * Subclasses use this method to provide view location
