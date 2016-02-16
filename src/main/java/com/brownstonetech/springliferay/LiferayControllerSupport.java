@@ -20,7 +20,7 @@ import com.liferay.portal.theme.ThemeDisplay;
  * <ul>
  * <li>themeDisplay: The {@link ThemeDisplay} of current request.</li>
  * <li>permissionChecker: The {@link PermissionChecker} of current request.</li>
- * <li>liferayInvocationContext: The {@link LiferayRequestContext} of current invocation.</li>
+ * <li>liferayInvocationContext: The {@link PortletInvocation} of current invocation.</li>
  * </ul>
  * 
  * @author Miles Huang
@@ -53,13 +53,13 @@ public class LiferayControllerSupport implements PortletConfigAware {
 
 	@ModelAttribute(SpringLiferayWebKeys.THEME_DISPLAY)
 	public ThemeDisplay themeDisplay(PortletRequest request) {
-		return LiferayRequestContext.getThemeDisplay(request);
+		return PortletInvocation.getThemeDisplay(request);
 	}
 	
 	@ModelAttribute(SpringLiferayWebKeys.PERMISSION_CHECKER)
 	public PermissionChecker permissionChecker(PortletRequest request) {
 		try {
-			return LiferayRequestContext.getPermissionChecker(request);
+			return PortletInvocation.getPermissionChecker(request);
 		} catch (SystemException e) {
 			_log.error("Fail to get portletRequest associated permissionChecker", e);
 		}
@@ -67,11 +67,11 @@ public class LiferayControllerSupport implements PortletConfigAware {
 	}
 	
 	@ModelAttribute(SpringLiferayWebKeys.PORTLET_INVOCATION)
-	public LiferayRequestContext portletInvocation (
+	public PortletInvocation portletInvocation (
 			PortletRequest portletRequest,
 			PortletResponse portletResponse
 			) throws SystemException {
-		return new LiferayRequestContext(portletConfig, 
+		return new PortletInvocation(portletConfig, 
 				portletRequest, portletResponse);
 	}
 	

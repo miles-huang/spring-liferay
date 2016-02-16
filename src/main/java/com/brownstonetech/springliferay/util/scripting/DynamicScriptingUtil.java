@@ -12,7 +12,7 @@ import javax.portlet.PortletRequest;
 import javax.portlet.PortletResponse;
 import javax.servlet.ServletContext;
 
-import com.brownstonetech.springliferay.LiferayRequestContext;
+import com.brownstonetech.springliferay.PortletInvocation;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.exception.SystemException;
 import com.liferay.portal.kernel.log.Log;
@@ -247,7 +247,7 @@ public class DynamicScriptingUtil {
 		return inputStream;
 	}
 	
-	public static void runScript(LiferayRequestContext portletInvocation,
+	public static void runScript(PortletInvocation portletInvocation,
 			String scriptPath, ScriptHandler handler)
 					throws ScriptingException, SystemException {
 		PortletRequest portletRequest = portletInvocation.getPortletRequest();
@@ -286,8 +286,8 @@ public class DynamicScriptingUtil {
 		PortletContext portletContext = portletConfig.getPortletContext();
 		scriptContext = ScriptingHelperUtil.getPortletObjects(
 					portletConfig, portletContext, request, response);
-		ThemeDisplay themeDisplay = LiferayRequestContext.getThemeDisplay(request);
-		PermissionChecker permissionChecker = LiferayRequestContext.getPermissionChecker(request);
+		ThemeDisplay themeDisplay = PortletInvocation.getThemeDisplay(request);
+		PermissionChecker permissionChecker = PortletInvocation.getPermissionChecker(request);
 		scriptContext.put("themeDisplay", themeDisplay);
 		scriptContext.put("permissionChecker", permissionChecker);
 		scriptContext.put("portletDisplay", themeDisplay.getPortletDisplay());

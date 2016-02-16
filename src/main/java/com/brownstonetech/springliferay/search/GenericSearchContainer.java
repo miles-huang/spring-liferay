@@ -2,13 +2,13 @@ package com.brownstonetech.springliferay.search;
 
 import java.beans.PropertyDescriptor;
 import java.util.HashSet;
-import java.util.Iterator;
 
 import javax.portlet.PortletRequest;
 import javax.portlet.PortletURL;
 
-import org.apache.commons.beanutils.BeanMap;
-import org.apache.commons.beanutils.PropertyUtils;
+import org.springframework.beans.BeanUtils;
+import org.springframework.beans.BeanWrapper;
+import org.springframework.beans.BeanWrapperImpl;
 
 import com.liferay.portal.kernel.dao.search.DisplayTerms;
 import com.liferay.portal.kernel.dao.search.SearchContainer;
@@ -26,7 +26,7 @@ public class GenericSearchContainer<E,S extends DisplayTerms> extends SearchCont
 	
 	static {
 		baseProperties = new HashSet<String>();
-		PropertyDescriptor[] descriptors = PropertyUtils.getPropertyDescriptors(DisplayTerms.class);
+		PropertyDescriptor[] descriptors = BeanUtils.getPropertyDescriptors(DisplayTerms.class);
 		for ( PropertyDescriptor descriptor: descriptors ) {
 			baseProperties.add(descriptor.getName());
 		}
@@ -44,12 +44,11 @@ public class GenericSearchContainer<E,S extends DisplayTerms> extends SearchCont
 				searchTerm, curParam, DEFAULT_DELTA,
 				iteratorURL, null, null);
 
-		BeanMap map = new BeanMap();
-		Iterator<String> propertyIter = map.keyIterator();
-		while ( propertyIter.hasNext() ) {
-			String propertyName = propertyIter.next();
+		BeanWrapper beanWrapper = new BeanWrapperImpl(searchTerm);
+		for ( PropertyDescriptor pd: beanWrapper.getPropertyDescriptors() ) {
+			String propertyName = pd.getName();
 			if ( baseProperties.contains(propertyName)) continue;
-			Object propertyValue = map.get(propertyName);
+			Object propertyValue = beanWrapper.getPropertyValue(propertyName);
 			addParameter(iteratorURL, propertyName, propertyValue);
 		}
 	}

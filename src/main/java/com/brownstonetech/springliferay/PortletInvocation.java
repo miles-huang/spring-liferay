@@ -22,13 +22,28 @@ import com.liferay.portal.security.permission.PermissionChecker;
 import com.liferay.portal.theme.ThemeDisplay;
 import com.liferay.portal.util.PortalUtil;
 
-public class LiferayRequestContext implements Serializable {
+/**
+ * The PortletInvocation contains context information of current portlet
+ * request invocation.
+ * <p>
+ * Following information can be retrieved from PortletInvocation:
+ * </p>
+ * <ul>
+ * <li>Portlet Request</li>
+ * <li>Portlet Response</li>
+ * <li>Portlet Config</li>
+ * <li>ThemeDisplay</li>
+ * <li>Permission Checker</li>
+ * </ul>
+ * @author Miles Huang
+ */
+public class PortletInvocation implements Serializable {
 
 	/**
 	 * 
 	 */
 	private static final long serialVersionUID = 1L;
-	private static Log _log = LogFactoryUtil.getLog(LiferayRequestContext.class);
+	private static Log _log = LogFactoryUtil.getLog(PortletInvocation.class);
 	
 	
 	private PortletRequest portletRequest;
@@ -40,7 +55,7 @@ public class LiferayRequestContext implements Serializable {
 	private ThemeDisplay themeDisplay;
 	private PermissionChecker permissionChecker;
 	
-	public LiferayRequestContext(PortletConfig portletConfig,
+	public PortletInvocation(PortletConfig portletConfig,
 			PortletRequest portletRequest,
 			PortletResponse portletResponse) throws SystemException {
 		if ( portletRequest == null ) {
