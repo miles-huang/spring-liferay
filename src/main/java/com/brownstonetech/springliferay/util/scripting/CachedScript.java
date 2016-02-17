@@ -17,7 +17,7 @@ public class CachedScript implements Serializable {
 	
 	public CachedScript(Date lastUpdateTime, CharSequence script) {
 		this.lastUpdateTime = lastUpdateTime.getTime();
-		this.script = script.toString();
+		this.script = script == null? null: script.toString();
 	}
 	
 	public synchronized boolean isExpired(Date lastUpdateTime) {

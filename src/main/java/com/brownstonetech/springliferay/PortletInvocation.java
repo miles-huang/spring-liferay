@@ -155,6 +155,10 @@ public class PortletInvocation implements Serializable {
 		ThemeDisplay themeDisplay = getThemeDisplay(portletRequest);
 		long plid = themeDisplay.getPlid();
 		String portletId = themeDisplay.getPortletDisplay().getId();
+		return getPortletUniqueId(portletId, plid);
+	}
+	
+	public static String getPortletUniqueId(String portletId, long plid) {
 		String portletUniqueId = new StringBundler(3).append(portletId).append("_").append(plid).toString();
 		return portletUniqueId;
 	}
@@ -176,5 +180,5 @@ public class PortletInvocation implements Serializable {
 		}
 		((RenderResponse)renderResponse).setTitle(title);
 	}
-	
+
 }
