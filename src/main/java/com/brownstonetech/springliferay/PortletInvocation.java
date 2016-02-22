@@ -5,22 +5,14 @@ import java.lang.ref.WeakReference;
 import java.util.Locale;
 
 import javax.portlet.PortletConfig;
-import javax.portlet.PortletException;
 import javax.portlet.PortletRequest;
 import javax.portlet.PortletResponse;
-import javax.portlet.RenderRequest;
-import javax.portlet.RenderResponse;
 import javax.servlet.ServletContext;
 
 import com.liferay.portal.kernel.exception.SystemException;
-import com.liferay.portal.kernel.log.Log;
-import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.portlet.PortletBagPool;
-import com.liferay.portal.kernel.util.StringBundler;
-import com.liferay.portal.kernel.util.WebKeys;
 import com.liferay.portal.security.permission.PermissionChecker;
 import com.liferay.portal.theme.ThemeDisplay;
-import com.liferay.portal.util.PortalUtil;
 
 /**
  * The PortletInvocation contains context information of current portlet
@@ -43,13 +35,12 @@ public class PortletInvocation implements Serializable {
 	 * 
 	 */
 	private static final long serialVersionUID = 1L;
-	private static Log _log = LogFactoryUtil.getLog(PortletInvocation.class);
 	
 	
 	private PortletRequest portletRequest;
 	private PortletResponse portletResponse;
 	private PortletConfig portletConfig;
-	
+	private String tplNS;
 	private WeakReference<ServletContext> servletContext;
 	
 	private ThemeDisplay themeDisplay;
@@ -64,7 +55,7 @@ public class PortletInvocation implements Serializable {
 		this.portletRequest = portletRequest;
 		this.portletResponse = portletResponse;
 		this.portletConfig = portletConfig;
-		this.permissionChecker = getPermissionChecker(portletRequest);
+		this.permissionChecker = PortalExtUtil.getPermissionChecker(portletRequest);
 	}
 	
 	public PortletRequest getPortletRequest() {
@@ -80,7 +71,8 @@ public class PortletInvocation implements Serializable {
 	}
 	
 	public ThemeDisplay getThemeDisplay() {
-		if ( themeDisplay == null ) themeDisplay = getThemeDisplay(portletRequest);
+		if ( themeDisplay == null ) themeDisplay = 
+				PortalExtUtil.getThemeDisplay(portletRequest);
 		return themeDisplay;
 	}
 	
@@ -99,6 +91,10 @@ public class PortletInvocation implements Serializable {
 	public String getPortletId() {
 		return getThemeDisplay().getPortletDisplay().getId();
 	}
+	
+	public String getRootPortletId() {
+		return getThemeDisplay().getPortletDisplay().getRootPortletId();
+	}
 
 	public long getPlid() {
 		return getThemeDisplay().getPlid();
@@ -112,27 +108,6 @@ public class PortletInvocation implements Serializable {
 		return getThemeDisplay().getCompanyId();
 	}
 
-	public static ThemeDisplay getThemeDisplay(PortletRequest request) {
-		ThemeDisplay themeDisplay = (ThemeDisplay)request.getAttribute(WebKeys.THEME_DISPLAY);
-		if (themeDisplay == null ) throw new IllegalStateException("ThemeDisplay not defined in request attribute");
-		return themeDisplay;
-	}
-
-	public static PortletConfig getPortletConfig(PortletRequest request) throws SystemException, PortletException {
-		ThemeDisplay themeDisplay = getThemeDisplay(request);
-		String portletId = themeDisplay.getPortletDisplay().getId();
-		ServletContext servletContext = PortletBagPool.get(portletId).getServletContext();
-		PortletConfig portletConfig = PortalUtil.getPortletConfig(themeDisplay.getCompanyId(), portletId, servletContext);
-		return portletConfig;
-	}
-
-	public static ServletContext getServletContext(PortletRequest request) {
-		ThemeDisplay themeDisplay = getThemeDisplay(request);
-		String portletId = themeDisplay.getPortletDisplay().getId();
-		ServletContext servletContext = PortletBagPool.get(portletId).getServletContext();
-		return servletContext;
-	}
-
 	public ServletContext getServletContext() {
 		ServletContext context = null;
 		if ( servletContext != null ) context = servletContext.get();
@@ -140,45 +115,34 @@ public class PortletInvocation implements Serializable {
 			return context;
 		}
 		// Lazy load servletContext
-		String portletId = getPortletId();
-		context = PortletBagPool.get(portletId).getServletContext();
+		String rootPortletId = getRootPortletId();
+		context = PortletBagPool.get(rootPortletId).getServletContext();
 		servletContext = new WeakReference<ServletContext>(context);
 		return context;
 	}
 	
-	public static PermissionChecker getPermissionChecker(PortletRequest request) throws SystemException {
-		PermissionChecker permissionChecker = getThemeDisplay(request).getPermissionChecker();
-		return permissionChecker;
+	public void hidePortlet() {
+		PortalExtUtil.hidePortlet(portletRequest);
 	}
 	
-	public static String getPortletUniqueId(PortletRequest portletRequest) {
-		ThemeDisplay themeDisplay = getThemeDisplay(portletRequest);
-		long plid = themeDisplay.getPlid();
-		String portletId = themeDisplay.getPortletDisplay().getId();
-		return getPortletUniqueId(portletId, plid);
-	}
-	
-	public static String getPortletUniqueId(String portletId, long plid) {
-		String portletUniqueId = new StringBundler(3).append(portletId).append("_").append(plid).toString();
-		return portletUniqueId;
-	}
-	
-	public static void hidePortlet(PortletRequest portletRequest) {
-		if ( portletRequest instanceof RenderRequest) {
-			portletRequest.setAttribute(WebKeys.PORTLET_CONFIGURATOR_VISIBILITY, true);
-		}	
+	public void setPortletTitle(String title) {
+		PortalExtUtil.setPortletTitle(portletResponse, title);
 	}
 
-	/**
-	 * Dynamically set the portlet title.
-	 * This method can only be called in render phase.
-	 * @param title
-	 */
-	public static void setPortletTitle(PortletResponse renderResponse, String title) {
-		if ( !(renderResponse instanceof RenderResponse)) {
-			_log.warn("Call setPortletTitle has no effect on phase other than render phase");
+	public String getTplNS() {
+		if ( tplNS != null ) return tplNS;
+		String instanceId = getThemeDisplay().getPortletDisplay().getInstanceId();
+		StringBuilder sb = new StringBuilder(20).append('(').append(getPlid());
+		if ( instanceId != null ) {
+			sb.append('_').append(instanceId);
 		}
-		((RenderResponse)renderResponse).setTitle(title);
+		sb.append(')');
+		tplNS = sb.toString();
+		return tplNS;
+	}
+
+	public String getPortletUniqueId() {
+		return PortalExtUtil.getPortletUniqueId(portletRequest);
 	}
 
 }

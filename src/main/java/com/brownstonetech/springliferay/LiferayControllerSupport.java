@@ -53,13 +53,13 @@ public class LiferayControllerSupport implements PortletConfigAware {
 
 	@ModelAttribute(SpringLiferayWebKeys.THEME_DISPLAY)
 	public ThemeDisplay themeDisplay(PortletRequest request) {
-		return PortletInvocation.getThemeDisplay(request);
+		return PortalExtUtil.getThemeDisplay(request);
 	}
 	
 	@ModelAttribute(SpringLiferayWebKeys.PERMISSION_CHECKER)
 	public PermissionChecker permissionChecker(PortletRequest request) {
 		try {
-			return PortletInvocation.getPermissionChecker(request);
+			return PortalExtUtil.getPermissionChecker(request);
 		} catch (SystemException e) {
 			_log.error("Fail to get portletRequest associated permissionChecker", e);
 		}
@@ -74,7 +74,7 @@ public class LiferayControllerSupport implements PortletConfigAware {
 		return new PortletInvocation(portletConfig, 
 				portletRequest, portletResponse);
 	}
-	
+		
 	private static Log _log = LogFactoryUtil.getLog(LiferayControllerSupport.class);
 
 }

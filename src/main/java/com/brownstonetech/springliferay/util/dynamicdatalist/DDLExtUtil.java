@@ -73,7 +73,7 @@ public class DDLExtUtil extends DDLUtil {
 				new DDLRecordMetaFieldInfo("reservedCreateUserName","author", "String",
 						com.liferay.portal.kernel.search.Field.USER_NAME));
 		RESERVED_COLUMNS.put("createDate",
-				new DDLRecordMetaFieldInfo("reservedCreateDate","create-date", "Date",
+				new DDLRecordMetaFieldInfo("reservedCreateDate","create-date", "java.util.Date",
 						com.liferay.portal.kernel.search.Field.CREATE_DATE));
 		RESERVED_COLUMNS.put("modifiedUserId",
 				new DDLRecordMetaFieldInfo("reservedModifiedUserId","last-changed-by", "long",
@@ -82,7 +82,7 @@ public class DDLExtUtil extends DDLUtil {
 				new DDLRecordMetaFieldInfo("reservedModifiedUserName","last-changed-by", "String",
 						null));
 		RESERVED_COLUMNS.put("modifiedDate",
-				new DDLRecordMetaFieldInfo("reservedModifiedDate","modified-date", "java.util.Date",
+				new DDLRecordMetaFieldInfo("reservedModifiedDate","modified-date", java.util.Date.class.getName(),
 						com.liferay.portal.kernel.search.Field.MODIFIED_DATE));
 		RESERVED_COLUMNS.put("status",
 				new DDLRecordMetaFieldInfo("reservedStatus","status", "int",

@@ -98,10 +98,16 @@
 					<outputDir>${project.build.directory}/generated-resources/META-INF</outputDir>
 					<taglibs>
 						<taglib>
-							<description>Spring MVC Liferay UI support</description>
+							<description>Spring MVC Liferay Support UI</description>
 							<shortName>sui</shortName>
 							<uri>http://brownstonetech.com/liferay/sui</uri>
 							<tagdir>src/main/resources/META-INF/tags/sui</tagdir>
+						</taglib>
+						<taglib>
+							<description>Spring MVC Liferay Support Utility</description>
+							<shortName>slu</shortName>
+							<uri>http://brownstonetech.com/liferay/slu</uri>
+							<tagdir>src/main/resources/META-INF/tags/slu</tagdir>
 						</taglib>
 					</taglibs>
 				</configuration>

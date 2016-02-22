@@ -16,7 +16,11 @@ public class CachedScript implements Serializable {
 	private String script;
 	
 	public CachedScript(Date lastUpdateTime, CharSequence script) {
-		this.lastUpdateTime = lastUpdateTime.getTime();
+		this(lastUpdateTime.getTime(), script);
+	}
+	
+	public CachedScript(long lastUpdateTime, CharSequence script) {
+		this.lastUpdateTime = lastUpdateTime;
 		this.script = script == null? null: script.toString();
 	}
 	
