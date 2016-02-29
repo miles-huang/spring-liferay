@@ -51,8 +51,9 @@ public class ViewLogger implements Serializable {
 			}
 		} else {
 			String data = JSONFactoryUtil.looseSerializeDeep(obj);
-			StringBundler sb = new StringBundler(3);
-			sb.append(message).append(System.getProperty("line.separator")).append(data);
+			StringBundler sb = new StringBundler(4);
+			sb.append(message).append(System.getProperty("line.separator"))
+			.append(obj.getClass().getName()).append(data);
 			log(level, sb.toString());
 		}
 	}

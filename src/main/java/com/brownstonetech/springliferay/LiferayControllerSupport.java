@@ -74,6 +74,18 @@ public class LiferayControllerSupport implements PortletConfigAware {
 		return new PortletInvocation(portletConfig, 
 				portletRequest, portletResponse);
 	}
+	
+	@ModelAttribute(SpringLiferayWebKeys.TEMPLATE_NS)
+	public String tplNS() {
+		// TODO Miles implement or remove
+		return "";
+	}
+	
+	@ModelAttribute(SpringLiferayWebKeys.PORTLET_NS)
+	public String portletNS(PortletResponse portletResponse) {
+		return portletResponse.getNamespace();
+	}
+	
 		
 	private static Log _log = LogFactoryUtil.getLog(LiferayControllerSupport.class);
 

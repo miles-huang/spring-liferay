@@ -109,6 +109,7 @@ public class TemplateNode extends com.liferay.portal.kernel.templateparser.Templ
 			url = super.getUrl();
 		}
 		this.url = url;
+		this.put("url", url);
 	}
 
 	private String genDLDownloadURL() {

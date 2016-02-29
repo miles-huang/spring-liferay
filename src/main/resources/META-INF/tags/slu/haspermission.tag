@@ -42,8 +42,8 @@ scopeGroupId, ownerId and resourcePK value from it." %>
 PermissionContext pc = (PermissionContext)jspContext.findAttribute("permissionContext");
 ThemeDisplay themeDisplay = (ThemeDisplay)request.getAttribute(WebKeys.THEME_DISPLAY);
 boolean result = permissionCheckHelper.hasPermission(themeDisplay,
-		pc,
-		scopeGroupId, resourceName, resourcePK, ownerId, actionId);
+		pc, actionId,
+		scopeGroupId, resourceName, resourcePK, ownerId);
 if ( Validator.isNotNull(var) ) {
 	if ( "application".equalsIgnoreCase(scope) ) {
 		application.setAttribute(var, result);

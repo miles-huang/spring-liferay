@@ -3,14 +3,20 @@ package com.brownstonetech.springliferay;
 import java.io.Serializable;
 import java.lang.ref.WeakReference;
 import java.util.Locale;
+import java.util.TimeZone;
 
 import javax.portlet.PortletConfig;
 import javax.portlet.PortletRequest;
 import javax.portlet.PortletResponse;
+import javax.portlet.WindowState;
 import javax.servlet.ServletContext;
 
 import com.liferay.portal.kernel.exception.SystemException;
+import com.liferay.portal.kernel.log.Log;
+import com.liferay.portal.kernel.log.LogFactoryUtil;
+import com.liferay.portal.kernel.portlet.LiferayWindowState;
 import com.liferay.portal.kernel.portlet.PortletBagPool;
+import com.liferay.portal.model.User;
 import com.liferay.portal.security.permission.PermissionChecker;
 import com.liferay.portal.theme.ThemeDisplay;
 
@@ -45,7 +51,9 @@ public class PortletInvocation implements Serializable {
 	
 	private ThemeDisplay themeDisplay;
 	private PermissionChecker permissionChecker;
-	
+	private TimeZone userTimeZone;
+	private TimeZone companyTimeZone;
+		
 	public PortletInvocation(PortletConfig portletConfig,
 			PortletRequest portletRequest,
 			PortletResponse portletResponse) throws SystemException {
@@ -145,4 +153,68 @@ public class PortletInvocation implements Serializable {
 		return PortalExtUtil.getPortletUniqueId(portletRequest);
 	}
 
+	public WindowState getWindowState() {
+		WindowState windowState = portletRequest.getWindowState();
+		return windowState;
+	}
+	
+	public boolean isWindowStateExclusive() {
+		return LiferayWindowState.EXCLUSIVE.equals(getWindowState());
+	}
+	
+	public boolean isWindowStateMaximized() {
+		return WindowState.MAXIMIZED.equals(getWindowState());
+	}
+	
+	public boolean isWindowStateMinimized() {
+		return WindowState.MINIMIZED.equals(getWindowState());
+	}
+	
+	public boolean isWindowStateNormal() {
+		return WindowState.NORMAL.equals(getWindowState());
+	}
+	
+	public boolean isWindowStatePopup() {
+		return LiferayWindowState.POP_UP.equals(getWindowState());
+	}
+	
+	public boolean isLayoutPrototypeLinkActive() {
+		return themeDisplay.getLayout().isLayoutPrototypeLinkActive();
+	}
+	
+	public boolean isSignedIn() {
+		return themeDisplay.isSignedIn();
+	}
+
+	public TimeZone getUserTimeZone() {
+		if ( userTimeZone != null ) {
+			return userTimeZone;
+		}
+		if ( isSignedIn() ) {
+			User user = themeDisplay.getUser();
+			userTimeZone = user.getTimeZone();
+		}
+		if ( userTimeZone == null ) {
+			userTimeZone = getCompanyTimeZone();
+		}
+		return userTimeZone;
+	}
+	
+	public TimeZone getCompanyTimeZone() {
+		if ( companyTimeZone != null ) {
+			return companyTimeZone;
+		}
+		try {
+			companyTimeZone = themeDisplay.getCompany().getTimeZone();
+		} catch (Exception e) {
+			_log.warn("Can't get timeZone from company", e);
+		}
+		if ( companyTimeZone == null ) {
+			companyTimeZone = TimeZone.getDefault();
+		}
+		return companyTimeZone;
+	}
+	
+	private static Log _log = LogFactoryUtil.getLog(PortletInvocation.class);
+	
 }

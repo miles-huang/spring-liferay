@@ -107,30 +107,48 @@ public class PermissionCheckHelper implements Serializable {
 		
 		PermissionChecker permissionChecker = themeDisplay.getPermissionChecker();
 
-		boolean answer = false;
-
-		if ( context.getOwnerId() != null && context.getOwnerId() > 0 ) {
-			answer = permissionChecker.hasOwnerPermission(
-					themeDisplay.getCompanyId(), context.getResourceName(),
-					context.getResourcePK(),
-					context.getOwnerId(), actionId);
-			if ( _log.isDebugEnabled()) {
-				_log.debug("Run owner permission check return: "+answer+": "+context.toString()+" check actionId="+actionId);
-			}
+		ownerId = context.getOwnerId();
+		resourceName = context.getResourceName();
+		long rPK = context.getResourcePK();
+		scopeGroupId = context.getScopeGroupId();
+		if ( scopeGroupId == null || scopeGroupId <= 0 ) {
+			scopeGroupId = themeDisplay.getScopeGroupId();
 		}
-		if ( !answer ) {
-			scopeGroupId = context.getScopeGroupId();
-			if ( scopeGroupId == null || scopeGroupId <= 0 ) {
-				scopeGroupId = themeDisplay.getScopeGroupId();
-			}
-			answer = permissionChecker.hasPermission(
-					scopeGroupId, context.getResourceName(),
-					context.getResourcePK(), actionId);
-			if ( _log.isDebugEnabled()) {
-				_log.debug("Run normal permission check return: "+answer+": "+context.toString()+" check actionId="+actionId);
-			}
+		boolean answer = hasPermission(permissionChecker, actionId,
+				themeDisplay.getCompanyId(), scopeGroupId,
+				resourceName, rPK, ownerId);
+		if ( _log.isDebugEnabled()) {
+			_log.debug("Run permission check return: "+answer+": "
+					+context.toString()+" check actionId="+actionId);
 		}
 		return answer;
 	}
 	
+	public static boolean hasPermission(PermissionChecker permissionChecker,
+			String actionId, long companyId, long scopeGroupId, String resourceName,
+			long resourcePK,
+			Long ownerId) {
+		boolean answer = false;
+		if ( ownerId != null && ownerId > 0 ) {
+			answer = permissionChecker.hasOwnerPermission(
+					companyId, resourceName,
+					resourcePK,
+					ownerId, actionId);
+			if ( _log.isDebugEnabled()) {
+				_log.debug("Run owner permission check return: "+answer
+						+". Check actionId="+actionId);
+			}
+		}
+		if ( !answer ) {
+			answer = permissionChecker.hasPermission(
+					scopeGroupId, resourceName,
+					resourcePK, actionId);
+			if ( _log.isDebugEnabled()) {
+				_log.debug("Run normal permission check return: "+answer
+						+". Check actionId="+actionId);
+			}
+		}
+		return answer;
+		
+	}
 }

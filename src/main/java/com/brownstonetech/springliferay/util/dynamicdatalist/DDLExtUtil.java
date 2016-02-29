@@ -23,7 +23,6 @@ import java.io.Serializable;
 import java.math.BigDecimal;
 import java.text.Format;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.Locale;
 import java.util.Map;
@@ -35,10 +34,8 @@ import com.liferay.portal.kernel.language.LanguageUtil;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.util.FastDateFormatFactoryUtil;
-import com.liferay.portal.kernel.util.ListUtil;
+import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.LocaleUtil;
-import com.liferay.portal.kernel.util.PropsKeys;
-import com.liferay.portal.kernel.util.PropsUtil;
 import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.kernel.workflow.WorkflowConstants;
 import com.liferay.portal.theme.ThemeDisplay;
@@ -59,6 +56,11 @@ public class DDLExtUtil extends DDLUtil {
 	private static final Map<String,DDLRecordMetaFieldInfo> RESERVED_COLUMNS = new LinkedHashMap<String,DDLRecordMetaFieldInfo>();
 	private static final Map<String,String> FIELD_DATA_TYPE_CLASSNAME;
 	private static Log _log = LogFactoryUtil.getLog(DDLExtUtil.class);
+
+//	private static Set<String> DYNAMIC_DATA_MAPPING_STRUCTURE_PRIVATE_FIELD_NAMES
+//		= new HashSet<String>(
+//			ListUtil.fromArray(PropsUtil.getArray(
+//					PropsKeys.DYNAMIC_DATA_MAPPING_STRUCTURE_PRIVATE_FIELD_NAMES)));
 
 	static {
 		RESERVED_COLUMNS.put("displayIndex",
@@ -142,6 +144,10 @@ public class DDLExtUtil extends DDLUtil {
 	
 	/**
 	 * Get a data model for the given DDL record for render template access.
+	 *
+	 * TODO Miles make the returned Map as an lazy loading Map to optimize performance.
+	 * TODO Miles make the model map cached in session. Navigation from list to view/edit should
+	 * be able to reuse the parsed result. However update detection need be smart (expire check: versionId + timestamp).
 	 * 
 	 * @param themeDisplay
 	 * @param record
@@ -150,16 +156,22 @@ public class DDLExtUtil extends DDLUtil {
 	 * @throws PortalException
 	 * @throws SystemException
 	 */
-	public static Map<String, TemplateNode> getRecordTemplateNode( ThemeDisplay themeDisplay,
+	public static Map<String, TemplateNode> getRecordRenderModel( ThemeDisplay themeDisplay,
 			DDLRecord record, boolean latestRecordVersion) throws PortalException, SystemException {
 
 		Map<String, TemplateNode> dataModel = new LinkedHashMap<String, TemplateNode>();
 
 		DDLRecordSet recordSet = record.getRecordSet();
 
+		// TODO Miles structure might be filtered by display template contained fields?
 		DDMStructure ddmStructure = recordSet.getDDMStructure();
 
-		Map<String, Map<String, String>> fieldsMap = ddmStructure.getFieldsMap(themeDisplay.getLanguageId());
+		DDLRecordVersion recordVersion = record.getRecordVersion();
+
+		if (latestRecordVersion) {
+			recordVersion = record.getLatestRecordVersion();
+		}
+
 //		getStructureFields(
 //				themeDisplay, columns, ddmStructure);
 		
@@ -168,11 +180,6 @@ public class DDLExtUtil extends DDLUtil {
 				DDMFieldTypes.TYPE_INT_NUMBER, record.getDisplayIndex(), "reservedDisplayIndex");
 		dataModel.put(fieldNode.getName(), fieldNode);
 		
-		fieldNode = new TemplateNode(themeDisplay, "recordId",
-				String.valueOf(record.getRecordId()), FieldConstants.LONG,
-				DDMFieldTypes.TYPE_INT_NUMBER, record.getRecordId(), "reservedRecordId");
-		dataModel.put(fieldNode.getName(), fieldNode);
-
 		fieldNode = new TemplateNode(themeDisplay, "reservedRecordId",
 				String.valueOf(record.getRecordId()), FieldConstants.LONG,
 				DDMFieldTypes.TYPE_INT_NUMBER, record.getRecordId(), "reservedRecordId");
@@ -195,7 +202,7 @@ public class DDLExtUtil extends DDLUtil {
 		String date = dateFormatDateTime.format(record.getCreateDate());
 		fieldNode = new TemplateNode(themeDisplay, "reservedCreateDate",
 				date, FieldConstants.DATE,
-				DDMFieldTypes.TYPE_DATE, record.getCreateDate(), "reservedCreateDate");
+				DDMFieldTypes.TYPE_DDM_DATE, record.getCreateDate(), "reservedCreateDate");
 		dataModel.put(fieldNode.getName(), fieldNode);
 
 		String uuid = record.getUuid();
@@ -210,12 +217,6 @@ public class DDLExtUtil extends DDLUtil {
 				DDMFieldTypes.TYPE_INT_NUMBER, groupId, "reservedGroupId");
 		dataModel.put(fieldNode.getName(), fieldNode);
 		
-		DDLRecordVersion recordVersion = record.getRecordVersion();
-
-		if (latestRecordVersion) {
-			recordVersion = record.getLatestRecordVersion();
-		}
-
 		fieldNode = new TemplateNode(themeDisplay, "reservedModifiedUserId",
 				String.valueOf(recordVersion.getUserId()), FieldConstants.LONG,
 				DDMFieldTypes.TYPE_INT_NUMBER, recordVersion.getUserId(), "reservedModifiedUserId");
@@ -230,7 +231,7 @@ public class DDLExtUtil extends DDLUtil {
 		date = dateFormatDateTime.format(record.getModifiedDate());
 		fieldNode = new TemplateNode(themeDisplay, "reservedModifiedDate",
 				date, FieldConstants.DATE,
-				DDMFieldTypes.TYPE_DATE, record.getModifiedDate(), "reservedModifiedDate");
+				DDMFieldTypes.TYPE_DDM_DATE, record.getModifiedDate(), "reservedModifiedDate");
 		dataModel.put(fieldNode.getName(), fieldNode);
 
 		String status = LanguageUtil.get(themeDisplay.getLocale(), 
@@ -240,8 +241,10 @@ public class DDLExtUtil extends DDLUtil {
 				DDMFieldTypes.TYPE_TEXT, status, "reservedStatus");
 		dataModel.put(fieldNode.getName(), fieldNode);
 		
-		Fields fields = StorageEngineUtil.getFields(
+		Fields fieldsModel = StorageEngineUtil.getFields(
 				recordVersion.getDDMStorageId());
+
+		Map<String, Map<String, String>> fieldsMap = ddmStructure.getFieldsMap(themeDisplay.getLanguageId());
 
 		for (Map<String, String> fieldMap : fieldsMap.values()) {
 			String dataType = fieldMap.get(FieldConstants.DATA_TYPE);
@@ -254,8 +257,8 @@ public class DDLExtUtil extends DDLUtil {
 			if (type==null)
 				continue;
 			
-			if (fields.contains(name)) {
-				Field field = fields.get(name);
+			if (fieldsModel.contains(name)) {
+				Field field = fieldsModel.get(name);
 				data = field.getRenderedValue(themeDisplay.getLocale());
 				Locale locale = themeDisplay.getLocale();
 				Set<Locale> availableLocales = field.getAvailableLocales();
@@ -329,17 +332,17 @@ public class DDLExtUtil extends DDLUtil {
 			String label = fieldMap.get(FieldConstants.LABEL);
 			String name = fieldMap.get(FieldConstants.NAME);
 			if ( !includePrivate ) {
-				if (DYNAMIC_DATA_MAPPING_STRUCTURE_PRIVATE_FIELD_NAMES.contains(name))
+//				Following logic was get from LP6.0, and is replaced by new logic get 
+//				from LP 6.2.x
+				if (GetterUtil.getBoolean(fieldMap.get(FieldConstants.PRIVATE))) {
 					continue;
+				}
 			}
 			fields.put(name, label);
 		}
 		return fields;
 	}
 	
-	private static Set<String> DYNAMIC_DATA_MAPPING_STRUCTURE_PRIVATE_FIELD_NAMES
-		=new HashSet<String>(
-				ListUtil.fromArray(PropsUtil.getArray(PropsKeys.DYNAMIC_DATA_MAPPING_STRUCTURE_PRIVATE_FIELD_NAMES)));
 	/**
 	 * Get DDL record's fields as a map.
 	 * The reserved fields and structure defined fields are all included in the map.

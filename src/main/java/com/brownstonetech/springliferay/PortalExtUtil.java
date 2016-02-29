@@ -1,6 +1,5 @@
 package com.brownstonetech.springliferay;
 
-import javax.portlet.PortletConfig;
 import javax.portlet.PortletException;
 import javax.portlet.PortletRequest;
 import javax.portlet.PortletResponse;
@@ -11,7 +10,9 @@ import javax.servlet.ServletContext;
 import com.liferay.portal.kernel.exception.SystemException;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
+import com.liferay.portal.kernel.portlet.LiferayPortletConfig;
 import com.liferay.portal.kernel.portlet.PortletBagPool;
+import com.liferay.portal.kernel.util.JavaConstants;
 import com.liferay.portal.kernel.util.StringBundler;
 import com.liferay.portal.kernel.util.WebKeys;
 import com.liferay.portal.security.permission.PermissionChecker;
@@ -48,12 +49,18 @@ public class PortalExtUtil {
 	 * @throws SystemException
 	 * @throws PortletException
 	 */
-	public static PortletConfig getPortletConfig(PortletRequest request) throws SystemException, PortletException {
-		ServletContext servletContext = getServletContext(request);
-		ThemeDisplay themeDisplay = getThemeDisplay(request);
-		String portletId = themeDisplay.getPortletDisplay().getId();
-		PortletConfig portletConfig = PortalUtil.getPortletConfig(themeDisplay.getCompanyId(), portletId, servletContext);
-		return portletConfig;
+//	public static PortletConfig getPortletConfig(PortletRequest request) throws SystemException, PortletException {
+//		ServletContext servletContext = getServletContext(request);
+//		ThemeDisplay themeDisplay = getThemeDisplay(request);
+//		String portletId = themeDisplay.getPortletDisplay().getId();
+//		PortletConfig portletConfig = PortalUtil.getPortletConfig(themeDisplay.getCompanyId(), portletId, servletContext);
+//		return portletConfig;
+//	}
+	public static LiferayPortletConfig getPortletConfig(PortletRequest portletRequest) {
+		LiferayPortletConfig liferayPortletConfig =
+				(LiferayPortletConfig)portletRequest.getAttribute(
+						JavaConstants.JAVAX_PORTLET_CONFIG);
+		return liferayPortletConfig;
 	}
 
 	/**
@@ -63,12 +70,24 @@ public class PortalExtUtil {
 	 * @return
 	 */
 	public static ServletContext getServletContext(PortletRequest request) {
-		ThemeDisplay themeDisplay = getThemeDisplay(request);
-		String rootPortletId = themeDisplay.getPortletDisplay().getRootPortletId();
-		ServletContext servletContext = PortletBagPool.get(rootPortletId).getServletContext();
-		return servletContext;
+//		ThemeDisplay themeDisplay = getThemeDisplay(request);
+//		String portletId = PortalUtil.getPortletId(request);
+		String rootPortletId = getRootPortletId(request);
+		if ( rootPortletId != null) {
+			ServletContext servletContext = PortletBagPool.get(rootPortletId).getServletContext();
+			return servletContext;
+		}
+		return null;
 	}
 
+	public static String getRootPortletId(PortletRequest portletRequest) {
+		LiferayPortletConfig portletConfig = getPortletConfig(portletRequest);
+		if ( portletConfig != null ) {
+			return portletConfig.getPortlet().getRootPortletId();
+		}
+		throw new IllegalStateException("Can't get portletConfig from portletRequest.");
+	}
+	
 	/**
 	 * Get PermissionChecker from a portletRequest object.
 	 * 
@@ -99,7 +118,7 @@ public class PortalExtUtil {
 	public static String getPortletUniqueId(PortletRequest portletRequest) {
 		ThemeDisplay themeDisplay = getThemeDisplay(portletRequest);
 		long plid = themeDisplay.getPlid();
-		String portletId = themeDisplay.getPortletDisplay().getId();
+		String portletId = PortalUtil.getPortletId(portletRequest);
 		return getPortletUniqueId(portletId, plid);
 	}
 	

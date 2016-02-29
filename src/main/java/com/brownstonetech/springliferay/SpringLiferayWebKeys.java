@@ -16,4 +16,7 @@ public class SpringLiferayWebKeys {
 	public static final String THEME_DISPLAY = "themeDisplay";
 	public static final String PERMISSION_CHECKER = "permissionChecker";
 	public static final String PORTLET_INVOCATION = "portletInvocation";
+	public static final String PORTLET_NS = "portletNS";
+	public static final String TEMPLATE_NS = "tplNS";
+	
 }
