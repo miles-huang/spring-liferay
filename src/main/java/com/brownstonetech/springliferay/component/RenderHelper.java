@@ -1,10 +1,17 @@
 package com.brownstonetech.springliferay.component;
 
 import java.io.Serializable;
+import java.util.Iterator;
+
+import javax.portlet.PortletRequest;
 
 import org.springframework.stereotype.Component;
 
 import com.liferay.portal.kernel.json.JSONFactoryUtil;
+import com.liferay.portal.kernel.servlet.SessionErrors;
+import com.liferay.portal.kernel.servlet.SessionMessages;
+import com.liferay.portal.kernel.util.LocaleUtil;
+import com.liferay.portal.kernel.util.StringPool;
 
 @Component("renderHelper")
 public class RenderHelper implements Serializable {
@@ -22,4 +29,16 @@ public class RenderHelper implements Serializable {
 		return JSONFactoryUtil.looseSerializeDeep(o);
 	}
 	
+	public Iterator<String> retrieveSessionErrors(PortletRequest portletRequest) {
+		Iterator<String> errors =
+				SessionErrors.iterator(portletRequest);
+		return errors;
+	}
+	
+	public Iterator<String> retrieveSessionMessages(PortletRequest portletRequest) {
+		Iterator<String> errors =
+				SessionMessages.iterator(portletRequest);
+		return errors;
+	}
+
 }

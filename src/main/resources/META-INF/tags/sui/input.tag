@@ -95,8 +95,10 @@
 <%@ attribute name="readOnly" required="false" rtexprvalue="true" type="Boolean" 
 	description="Makes an input component read only. Default is false" %>
 
-<%@ include file="../init.tagf" %>
+<%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
 <%@ taglib uri="http://liferay.com/tld/aui" prefix="aui" %>
+<%@ taglib uri="http://www.springframework.org/tags" prefix="spring" %>
+
 <spring:bind path="${name}">
 	<%
 	String suffix = null;

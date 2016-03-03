@@ -31,7 +31,6 @@ scopeGroupId, ownerId and resourcePK value from it." %>
 <%@ attribute name="var" required="false" rtexprvalue="true" type="String" 
 	description="The variable name of the check result." %>
 	
-<%@ include file="../init.tagf" %>
 <%@ tag import="com.liferay.portal.theme.ThemeDisplay" %>
 <%@ tag import="com.liferay.portal.kernel.util.Validator" %>
 <%@ tag import="com.liferay.portal.kernel.util.WebKeys" %>
