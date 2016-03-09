@@ -10,8 +10,6 @@ import org.springframework.stereotype.Component;
 import com.liferay.portal.kernel.json.JSONFactoryUtil;
 import com.liferay.portal.kernel.servlet.SessionErrors;
 import com.liferay.portal.kernel.servlet.SessionMessages;
-import com.liferay.portal.kernel.util.LocaleUtil;
-import com.liferay.portal.kernel.util.StringPool;
 
 @Component("renderHelper")
 public class RenderHelper implements Serializable {

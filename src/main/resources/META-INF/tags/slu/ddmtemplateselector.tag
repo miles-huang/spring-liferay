@@ -20,6 +20,10 @@ manage application to create/edit existing templates" %>
 	description="the url for navigation back from manage template" %>
 <%@ attribute name="showEmptyOption" required="false" rtexprvalue="true" type="Boolean" 
 	description="Is show Default option in the template list for custom template not defined case" %>
+<%@ attribute name="showGlobalTemplates" required="false" rtexprvalue="true" type="Boolean"
+	description="Is include global templates in the list. Default is true" %>
+<%@ attribute name="showSiteTemplates" required="false" rtexprvalue="true" type="Boolean"
+	description="Is include site templates in the list. Default is true" %>
 <%@ attribute name="preferenceNamePrefix" required="false" rtexprvalue="true" type="String" 
 	description="A prefix added to portlet preference name displayStyle and displayStyleGroupId. To support multiple ADT definition case.
 	 If not provided there is no prefix added.
@@ -355,6 +359,8 @@ List<String> displayStylesList = (List<String>)displayStyles;
 if ( null == classPK ) classPK=0L;
 if ( null == displayStyleGroupId ) displayStyleGroupId = 0L;
 if ( null == showEmptyOption ) showEmptyOption = false;
+if ( null == showGlobalTemplates ) showGlobalTemplates = true;
+if ( null == showSiteTemplates ) showSiteTemplates = true;
 
 long ddmTemplateGroupId = PortletDisplayTemplateUtil.getDDMTemplateGroupId(themeDisplay.getScopeGroupId());
 
@@ -394,6 +400,7 @@ DDMTemplate ddmTemplate = null;
 		ddmTemplate = PortletDisplayTemplateUtil.fetchDDMTemplate(displayStyleGroupId, displayStyle);
 	}
 
+	if (showGlobalTemplates) {
 	List<DDMTemplate> companyPortletDDMTemplates = DDMTemplateLocalServiceUtil.getTemplates(themeDisplay.getCompanyGroupId(), classNameId, classPK);
 	%>
 
@@ -419,6 +426,8 @@ DDMTemplate ddmTemplate = null;
 	</c:if>
 
 	<%
+	}
+	if ( showSiteTemplates) {
 	List<DDMTemplate> groupPortletDDMTemplates = null;
 
 	if (ddmTemplateGroupId != themeDisplay.getCompanyGroupId()) {
@@ -446,6 +455,9 @@ DDMTemplate ddmTemplate = null;
 
 		</optgroup>
 	</c:if>
+	<%
+	}
+	%>
 </aui:select>
 
 <liferay-ui:icon
