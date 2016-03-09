@@ -15,6 +15,11 @@ import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portlet.documentlibrary.model.DLFileEntry;
 
+/**
+ * TODO is this class still used anywhere?
+ * @author Miles Huang
+ *
+ */
 public class ScriptCacheUtil implements Serializable {
 
 	/**

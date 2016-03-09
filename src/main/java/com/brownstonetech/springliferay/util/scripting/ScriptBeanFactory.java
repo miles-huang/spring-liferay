@@ -1,6 +1,5 @@
 package com.brownstonetech.springliferay.util.scripting;
 
-import java.io.Serializable;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.Collections;
@@ -33,52 +32,24 @@ public class ScriptBeanFactory {
 		}
 	}
 	
-	public static synchronized void validateClass(ServletContext servletContext, String className, String sourceHash) {
-		Map<String, CompiledClass> scriptClassCache = getScriptClassCache(servletContext);
-		CompiledClass compiledClass = scriptClassCache.get(className);
-		if ( compiledClass == null ) return;
-		if ( !compiledClass.getSourceHash().equals(sourceHash)) {
-			// clear compiled class cache
-			scriptClassCache.remove(className);
-		}
-	}
-	
-	public static Class<?> getCompiledClass(ServletContext servletContext, String className) {
-		Map<String, CompiledClass> scriptClassCache = getScriptClassCache(servletContext);
-		CompiledClass compiledClass = scriptClassCache.get(className);
-		if ( compiledClass == null ) return null;
-		return compiledClass.getCompiledClass();
+	public static CachedCompiledClass getCompiledClass(ServletContext servletContext, String classNameFQDN) {
+		Map<String, CachedCompiledClass> scriptClassCache = getScriptClassCache(servletContext);
+		CachedCompiledClass compiledClass = scriptClassCache.get(classNameFQDN);
+		return compiledClass;
 	}
 
-	private static class CompiledClass implements Serializable {
-		/**
-		 * 
-		 */
-		private static final long serialVersionUID = 1L;
-		private String sourceHash;
-		private Class<?> compiledClass;
-		
-		public CompiledClass(String sourceHash, Class<?> compiledClass) {
-			this.sourceHash = sourceHash;
-			this.compiledClass = compiledClass;
-		}
-		
-		public String getSourceHash() {
-			return sourceHash;
-		}
-		
-		public Class<?> getCompiledClass() {
-			return compiledClass;
-		}
+	public static void expire(ServletContext servletContext, String classNameFQDN) {
+		Map<String, CachedCompiledClass> scriptClassCache = getScriptClassCache(servletContext);
+		scriptClassCache.remove(classNameFQDN);
 	}
-		
-	private static synchronized Map<String, CompiledClass> getScriptClassCache(
+	
+	private static synchronized Map<String, CachedCompiledClass> getScriptClassCache(
 			ServletContext servletContext) {
 		@SuppressWarnings("unchecked")
-		Map<String, CompiledClass> scriptClassCache = 
-			(Map<String,CompiledClass>)servletContext.getAttribute(GROOVY_CLASS_CACHE_KEY);
+		Map<String, CachedCompiledClass> scriptClassCache = 
+			(Map<String,CachedCompiledClass>)servletContext.getAttribute(GROOVY_CLASS_CACHE_KEY);
 		if ( scriptClassCache == null ) {
-			scriptClassCache = new SimpleCache<String, CompiledClass>(100);
+			scriptClassCache = new SimpleCache<String, CachedCompiledClass>(100);
 			scriptClassCache = Collections.synchronizedMap(scriptClassCache);
 			servletContext.setAttribute(GROOVY_CLASS_CACHE_KEY, scriptClassCache);
 		}
@@ -94,8 +65,9 @@ public class ScriptBeanFactory {
 		return gl;
 	}
 	
-	public static Class<?> compileClass(ServletContext servletContext, String sourceHash, String script, String className) throws SystemException {
-		Map<String,CompiledClass> scriptClassCache = getScriptClassCache(servletContext);
+	public static Class<?> compileClass(ServletContext servletContext, String sourceHash, long lastUpdateTime,
+			String script, String classFQDN) throws SystemException {
+		Map<String,CachedCompiledClass> scriptClassCache = getScriptClassCache(servletContext);
 		ClassLoader gcl = getGroovyClassLoader(servletContext);
 		try {
 			// gcl must be GroovyClassLoader
@@ -103,7 +75,7 @@ public class ScriptBeanFactory {
 			// class
 			Method method = gcl.getClass().getMethod("parseClass", String.class);
 			Class<?> scriptClass = (Class<?>)method.invoke(gcl, script);
-			scriptClassCache.put(className, new CompiledClass(sourceHash, scriptClass));
+			scriptClassCache.put(classFQDN, new CachedCompiledClass(sourceHash, lastUpdateTime, scriptClass));
 			return scriptClass;
 		} catch (InvocationTargetException e) {
 			throw new SystemException(e.getCause());
@@ -117,4 +89,5 @@ public class ScriptBeanFactory {
 	public static boolean isGroovyObject(Object object) {
 		return groovyObjectClass.isAssignableFrom(object.getClass());
 	}
+
 }
