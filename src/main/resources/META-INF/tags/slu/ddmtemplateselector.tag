@@ -404,7 +404,7 @@ if ( showTemplateViewLink && ddmTemplate != null) {
 %>
 <liferay-ui:icon
 	id='<%= "viewCustomTemplate"+preferenceNamePrefix %>'
-	image="view_templates"
+	iconCssClass="icon-eye-open"
 	label="<%= true %>"
 	message='view-source'
 	url="<%= url %>"
@@ -422,7 +422,7 @@ if ( showTemplateUpdateLink && ddmTemplate != null
 
 <liferay-ui:icon
 	id='<%= "updateDDMTemplate"+preferenceNamePrefix %>'
-	image="edit"
+	iconCssClass="icon-edit"
 	label="<%= true %>"
 	message='<%= LanguageUtil.get(locale, "edit-template") %>'
 	url="javascript:;"
@@ -472,7 +472,7 @@ if ( showTemplateCreateLink
 %>
 <liferay-ui:icon
 	id='<%= "createDDMTemplate"+preferenceNamePrefix %>'
-	image = "add_template_display"
+	iconCssClass="icon-plus"
 	label="<%= true %>"
 	message="add-template"
 	url="javascript:;"
@@ -517,7 +517,7 @@ if ( showTemplateCreateLink
 
 <liferay-ui:icon
 	id='<%= "selectDDMTemplate"+preferenceNamePrefix %>'
-	image="<%= icon %>"
+	iconCssClass="icon-cog"
 	label="<%= true %>"
 	message='<%= LanguageUtil.format(locale, "manage-display-templates-for-x", HtmlUtil.escape(ddmTemplateGroup.getDescriptiveName(locale)), false) %>'
 	url="javascript:;"
@@ -531,7 +531,7 @@ if (Validator.isNotNull(referenceTemplateURI)) {
 %>
 <liferay-ui:icon
 	id='<%= "viewBaseTemplate"+preferenceNamePrefix %>'
-	image="view_templates"
+	iconCssClass="icon-book"
 	label="<%= true %>"
 	message='<%= LanguageUtil.get(locale, "View Example") %>'
 	url="<%= url %>"
