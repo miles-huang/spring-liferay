@@ -20,24 +20,26 @@ manage application to create/edit existing templates" %>
 	description="the url for navigation back from manage template" %>
 <%@ attribute name="showEmptyOption" required="false" rtexprvalue="true" type="Boolean" 
 	description="Is show Default option in the template list for custom template not defined case" %>
-<%@ attribute name="showGlobalTemplates" required="false" rtexprvalue="true" type="Boolean"
-	description="Is include global templates in the list. Default is true" %>
-<%@ attribute name="showSiteTemplates" required="false" rtexprvalue="true" type="Boolean"
-	description="Is include site templates in the list. Default is true" %>
 <%@ attribute name="preferenceNamePrefix" required="false" rtexprvalue="true" type="String" 
 	description="A prefix added to portlet preference name displayStyle and displayStyleGroupId. To support multiple ADT definition case.
 	 If not provided there is no prefix added.
 	 If provided for example 'view', the preference names would be viewDisplayStyle and viewDisplayStyleGroupId." %>
-<%-- 
-<%@ include file="../init.tagf" %>
---%>
+<%@ attribute name="showBuiltinTemplates" required="false" rtexprvalue="true" type="Boolean"
+	description="Is include builtin templates in the list. Default is false" %>
+<%@ attribute name="showCustomTemplates" required="false" rtexprvalue="true" type="Boolean"
+	description="Is include custom templates in the list. Default is true" %>
+<%@ attribute name="showTemplateViewLink" required="false" rtexprvalue="true" type="Boolean"
+	description="Is include a link to show current configured template in a separated window/tab. Default is true" %>
+<%@ attribute name="showTemplateUpdateLink" required="false" rtexprvalue="true" type="Boolean"
+	description="Is include a link to update current configured template directly. Default is true" %>
+<%@ attribute name="showTemplateCreateLink" required="false" rtexprvalue="true" type="Boolean"
+	description="Is include a link to create new custom template. Default is true" %>
+<%@ attribute name="referenceTemplateURI" required="false" rtexprvalue="true" type="String"
+	description="If provided, will also include a link to show the template using the template key as reference template in a separatec window/tab" %>
+<%@ attribute name="formName" required="false" rtexprvalue="true" type="String"
+	description="The form to submit after some configuration changed. Default is 'fm'" %>
+
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
-<%--
-<%@ taglib uri="http://java.sun.com/jsp/jstl/fmt" prefix="fmt" %>
-<%@ taglib uri="http://java.sun.com/jsp/jstl/functions" prefix="fn" %>
-<%@ taglib uri="http://java.sun.com/jsp/jstl/sql" prefix="sql" %>
-<%@ taglib uri="http://java.sun.com/jsp/jstl/xml" prefix="x" %>
- --%>
  
 <%@ taglib uri="http://java.sun.com/portlet_2_0" prefix="portlet" %>
 
@@ -61,13 +63,6 @@ tag import="com.liferay.portal.kernel.cal.Recurrence" %><%@
 tag import="com.liferay.portal.kernel.captcha.CaptchaMaxChallengesException" %><%@
 tag import="com.liferay.portal.kernel.captcha.CaptchaTextException" %><%@
 tag import="com.liferay.portal.kernel.configuration.Filter" %><%@
-tag import="com.liferay.portal.kernel.dao.orm.QueryUtil" %><%@
-tag import="com.liferay.portal.kernel.dao.search.DisplayTerms" %><%@
-tag import="com.liferay.portal.kernel.dao.search.ResultRow" %><%@
-tag import="com.liferay.portal.kernel.dao.search.RowChecker" %><%@
-tag import="com.liferay.portal.kernel.dao.search.SearchContainer" %><%@
-tag import="com.liferay.portal.kernel.dao.search.SearchEntry" %><%@
-tag import="com.liferay.portal.kernel.dao.search.TextSearchEntry" %><%@
 tag import="com.liferay.portal.kernel.exception.LocalizedException" %><%@
 tag import="com.liferay.portal.kernel.exception.PortalException" %><%@
 tag import="com.liferay.portal.kernel.exception.SystemException" %><%@
@@ -90,25 +85,6 @@ tag import="com.liferay.portal.kernel.portlet.LiferayPortletURL" %><%@
 tag import="com.liferay.portal.kernel.portlet.LiferayWindowState" %><%@
 tag import="com.liferay.portal.kernel.repository.model.FileEntry" %><%@
 tag import="com.liferay.portal.kernel.repository.model.FileVersion" %><%@
-tag import="com.liferay.portal.kernel.search.Field" %><%@
-tag import="com.liferay.portal.kernel.search.Hits" %><%@
-tag import="com.liferay.portal.kernel.search.Indexer" %><%@
-tag import="com.liferay.portal.kernel.search.IndexerRegistryUtil" %><%@
-tag import="com.liferay.portal.kernel.search.QueryConfig" %><%@
-tag import="com.liferay.portal.kernel.search.SearchContext" %><%@
-tag import="com.liferay.portal.kernel.search.SearchContextFactory" %><%@
-tag import="com.liferay.portal.kernel.search.SearchResultUtil" %><%@
-tag import="com.liferay.portal.kernel.search.Sort" %><%@
-tag import="com.liferay.portal.kernel.search.SortFactoryUtil" %><%@
-tag import="com.liferay.portal.kernel.search.Summary" %><%@
-tag import="com.liferay.portal.kernel.servlet.BrowserSnifferUtil" %><%@
-tag import="com.liferay.portal.kernel.servlet.BufferCacheServletResponse" %><%@
-tag import="com.liferay.portal.kernel.servlet.PortalMessages" %><%@
-tag import="com.liferay.portal.kernel.servlet.ServletContextPool" %><%@
-tag import="com.liferay.portal.kernel.servlet.ServletContextUtil" %><%@
-tag import="com.liferay.portal.kernel.servlet.SessionErrors" %><%@
-tag import="com.liferay.portal.kernel.servlet.SessionMessages" %><%@
-tag import="com.liferay.portal.kernel.staging.LayoutStagingUtil" %><%@
 tag import="com.liferay.portal.kernel.template.StringTemplateResource" %><%@
 tag import="com.liferay.portal.kernel.template.TemplateHandler" %><%@
 tag import="com.liferay.portal.kernel.template.TemplateHandlerRegistryUtil" %><%@
@@ -161,12 +137,6 @@ tag import="com.liferay.portal.kernel.util.UnicodeFormatter" %><%@
 tag import="com.liferay.portal.kernel.util.UnicodeProperties" %><%@
 tag import="com.liferay.portal.kernel.util.UniqueList" %><%@
 tag import="com.liferay.portal.kernel.util.Validator" %><%@
-tag import="com.liferay.portal.kernel.workflow.WorkflowConstants" %><%@
-tag import="com.liferay.portal.kernel.workflow.WorkflowDefinition" %><%@
-tag import="com.liferay.portal.kernel.workflow.WorkflowDefinitionManagerUtil" %><%@
-tag import="com.liferay.portal.kernel.workflow.WorkflowEngineManagerUtil" %><%@
-tag import="com.liferay.portal.kernel.workflow.WorkflowHandlerRegistryUtil" %><%@
-tag import="com.liferay.portal.layoutconfiguration.util.RuntimePageUtil" %><%@
 tag import="com.liferay.portal.model.*" %><%@
 tag import="com.liferay.portal.model.impl.*" %><%@
 tag import="com.liferay.portal.portletfilerepository.PortletFileRepositoryUtil" %><%@
@@ -200,28 +170,6 @@ tag import="com.liferay.portlet.PortletPreferencesFactoryUtil" %><%@
 tag import="com.liferay.portlet.PortletSetupUtil" %><%@
 tag import="com.liferay.portlet.PortletURLFactoryUtil" %><%@
 tag import="com.liferay.portlet.PortletURLUtil" %><%@
-tag import="com.liferay.portlet.asset.AssetRendererFactoryRegistryUtil" %><%@
-tag import="com.liferay.portlet.asset.model.AssetCategory" %><%@
-tag import="com.liferay.portlet.asset.model.AssetEntry" %><%@
-tag import="com.liferay.portlet.asset.model.AssetRenderer" %><%@
-tag import="com.liferay.portlet.asset.model.AssetRendererFactory" %><%@
-tag import="com.liferay.portlet.asset.model.AssetTag" %><%@
-tag import="com.liferay.portlet.asset.model.AssetVocabulary" %><%@
-tag import="com.liferay.portlet.asset.service.AssetCategoryLocalServiceUtil" %><%@
-tag import="com.liferay.portlet.asset.service.AssetCategoryServiceUtil" %><%@
-tag import="com.liferay.portlet.asset.service.AssetEntryLocalServiceUtil" %><%@
-tag import="com.liferay.portlet.asset.service.AssetEntryServiceUtil" %><%@
-tag import="com.liferay.portlet.asset.service.AssetTagLocalServiceUtil" %><%@
-tag import="com.liferay.portlet.asset.service.AssetTagServiceUtil" %><%@
-tag import="com.liferay.portlet.asset.service.AssetVocabularyLocalServiceUtil" %><%@
-tag import="com.liferay.portlet.asset.service.AssetVocabularyServiceUtil" %><%@
-tag import="com.liferay.portlet.asset.service.persistence.AssetEntryQuery" %><%@
-tag import="com.liferay.portlet.blogs.model.BlogsEntry" %><%@
-tag import="com.liferay.portlet.documentlibrary.FileSizeException" %><%@
-tag import="com.liferay.portlet.documentlibrary.model.DLFileEntry" %><%@
-tag import="com.liferay.portlet.documentlibrary.model.DLFileEntryConstants" %><%@
-tag import="com.liferay.portlet.documentlibrary.service.DLAppLocalServiceUtil" %><%@
-tag import="com.liferay.portlet.documentlibrary.util.DLUtil" %><%@
 tag import="com.liferay.portlet.dynamicdatamapping.NoSuchStructureException" %><%@
 tag import="com.liferay.portlet.dynamicdatamapping.model.DDMStructure" %><%@
 tag import="com.liferay.portlet.dynamicdatamapping.model.DDMTemplate" %><%@
@@ -289,6 +237,7 @@ tag import="java.util.TimeZone" %><%@
 tag import="java.util.TreeMap" %><%@
 tag import="java.util.TreeSet" %>
 
+
 <%@ tag import="javax.portlet.MimeResponse" %><%@
 tag import="javax.portlet.PortletConfig" %><%@
 tag import="javax.portlet.PortletContext" %><%@
@@ -313,32 +262,14 @@ tag import="javax.portlet.WindowState" %>
 <%@ tag import="com.liferay.taglib.aui.AUIUtil" %>
 <%@ tag import="com.liferay.taglib.util.InlineUtil" %>
 
-<%@ tag import="java.util.ArrayList" %>
-<%@ tag import="java.util.HashMap" %>
-<%@ tag import="java.util.Map" %>
-
 <%@ tag import="org.springframework.web.servlet.support.BindStatus" %>
 
-<%--
-PortletRequest portletRequest = (PortletRequest)request.getAttribute(JavaConstants.JAVAX_PORTLET_REQUEST);
-
-PortletResponse portletResponse = (PortletResponse)request.getAttribute(JavaConstants.JAVAX_PORTLET_RESPONSE);
-
-String namespace = StringPool.BLANK;
-
-boolean auiFormUseNamespace = GetterUtil.getBoolean((String)request.getAttribute("aui:form:useNamespace"), true);
-
-if ((portletResponse != null) && auiFormUseNamespace) {
-	namespace = GetterUtil.getString(request.getAttribute("aui:form:portletNamespace"), portletResponse.getNamespace());
-}
-
-String currentURL = PortalUtil.getCurrentURL(request);
---%>
-
-
+<%@ tag import="com.liferay.portlet.dynamicdatamapping.model.DDMTemplateConstants" %>
 <%@ tag import="com.liferay.portlet.portletdisplaytemplate.util.PortletDisplayTemplate" %>
 <%@ tag import="com.liferay.portlet.portletdisplaytemplate.util.PortletDisplayTemplateUtil" %>
 <%@ tag import="com.brownstonetech.springliferay.permission.DDMTemplatePermission" %>
+<%@ tag import="com.brownstonetech.springliferay.permission.DDMPermission" %>
+<%@ tag import="com.brownstonetech.springliferay.freemarker.ADTTemplateLoaderUtil" %>
 
 <liferay-theme:defineObjects />
 <%
@@ -359,8 +290,12 @@ List<String> displayStylesList = (List<String>)displayStyles;
 if ( null == classPK ) classPK=0L;
 if ( null == displayStyleGroupId ) displayStyleGroupId = 0L;
 if ( null == showEmptyOption ) showEmptyOption = false;
-if ( null == showGlobalTemplates ) showGlobalTemplates = true;
-if ( null == showSiteTemplates ) showSiteTemplates = true;
+if ( null == showBuiltinTemplates ) showBuiltinTemplates = false;
+if ( null == showCustomTemplates ) showCustomTemplates = true;
+if ( null == showTemplateViewLink ) showTemplateViewLink = true;
+if ( null == showTemplateCreateLink ) showTemplateCreateLink = true;
+if ( null == showTemplateUpdateLink ) showTemplateUpdateLink = true;
+if ( Validator.isNull(formName)) formName = "fm";
 
 long ddmTemplateGroupId = PortletDisplayTemplateUtil.getDDMTemplateGroupId(themeDisplay.getScopeGroupId());
 
@@ -400,8 +335,9 @@ DDMTemplate ddmTemplate = null;
 		ddmTemplate = PortletDisplayTemplateUtil.fetchDDMTemplate(displayStyleGroupId, displayStyle);
 	}
 
-	if (showGlobalTemplates) {
 	List<DDMTemplate> companyPortletDDMTemplates = DDMTemplateLocalServiceUtil.getTemplates(themeDisplay.getCompanyGroupId(), classNameId, classPK);
+	companyPortletDDMTemplates = filterTemplates(permissionChecker, companyPortletDDMTemplates,
+			showBuiltinTemplates, showCustomTemplates);
 	%>
 
 	<c:if test="<%= (companyPortletDDMTemplates != null) && !companyPortletDDMTemplates.isEmpty() %>">
@@ -411,12 +347,11 @@ DDMTemplate ddmTemplate = null;
 			data.put("displaystylegroupid", themeDisplay.getCompanyGroupId());
 
 			for (DDMTemplate companyPortletDDMTemplate : companyPortletDDMTemplates) {
-				if (!DDMTemplatePermission.contains(permissionChecker, companyPortletDDMTemplate, PortletKeys.PORTLET_DISPLAY_TEMPLATES, ActionKeys.VIEW)) {
-					continue;
-				}
 			%>
 
-				<aui:option data="<%= data %>" label="<%= HtmlUtil.escape(companyPortletDDMTemplate.getName(locale)) %>" selected="<%= (ddmTemplate != null) && (companyPortletDDMTemplate.getTemplateId() == ddmTemplate.getTemplateId()) %>" value="<%= PortletDisplayTemplate.DISPLAY_STYLE_PREFIX + companyPortletDDMTemplate.getUuid() %>" />
+				<aui:option data="<%= data %>" label="<%= HtmlUtil.escape(companyPortletDDMTemplate.getName(locale)) %>" 
+					selected="<%= (ddmTemplate != null) && (companyPortletDDMTemplate.getTemplateId() == ddmTemplate.getTemplateId()) %>"
+					value="<%= PortletDisplayTemplate.DISPLAY_STYLE_PREFIX + companyPortletDDMTemplate.getUuid() %>" />
 
 			<%
 			}
@@ -426,8 +361,6 @@ DDMTemplate ddmTemplate = null;
 	</c:if>
 
 	<%
-	}
-	if ( showSiteTemplates) {
 	List<DDMTemplate> groupPortletDDMTemplates = null;
 
 	if (ddmTemplateGroupId != themeDisplay.getCompanyGroupId()) {
@@ -435,6 +368,8 @@ DDMTemplate ddmTemplate = null;
 
 		data.put("displaystylegroupid", ddmTemplateGroupId);
 	}
+	groupPortletDDMTemplates = filterTemplates(permissionChecker, groupPortletDDMTemplates, showBuiltinTemplates, showCustomTemplates);
+	
 	%>
 
 	<c:if test="<%= (groupPortletDDMTemplates != null) && !groupPortletDDMTemplates.isEmpty() %>">
@@ -442,12 +377,12 @@ DDMTemplate ddmTemplate = null;
 
 		<%
 		for (DDMTemplate groupPortletDDMTemplate : groupPortletDDMTemplates) {
-			if (!DDMTemplatePermission.contains(permissionChecker, groupPortletDDMTemplate, PortletKeys.PORTLET_DISPLAY_TEMPLATES, ActionKeys.VIEW)) {
-				continue;
-			}
 		%>
 
-			<aui:option data="<%= data %>" label="<%= HtmlUtil.escape(groupPortletDDMTemplate.getName(locale)) %>" selected="<%= (ddmTemplate != null) && (groupPortletDDMTemplate.getTemplateId() == ddmTemplate.getTemplateId()) %>" value="<%= PortletDisplayTemplate.DISPLAY_STYLE_PREFIX + groupPortletDDMTemplate.getUuid() %>" />
+			<aui:option data="<%= data %>" 
+				label="<%= HtmlUtil.escape(groupPortletDDMTemplate.getName(locale)) %>"
+				selected="<%= (ddmTemplate != null) && (groupPortletDDMTemplate.getTemplateId() == ddmTemplate.getTemplateId()) %>"
+				value="<%= PortletDisplayTemplate.DISPLAY_STYLE_PREFIX + groupPortletDDMTemplate.getUuid() %>" />
 
 		<%
 		}
@@ -455,10 +390,130 @@ DDMTemplate ddmTemplate = null;
 
 		</optgroup>
 	</c:if>
-	<%
-	}
-	%>
 </aui:select>
+
+<liferay-portlet:renderURL plid="<%= themeDisplay.getPlid() %>" portletName="<%= PortletKeys.DYNAMIC_DATA_MAPPING %>" var="basePortletURL">
+	<portlet:param name="showHeader" value="<%= Boolean.FALSE.toString() %>" />
+	<portlet:param name="type" value='<%= DDMTemplateConstants.TEMPLATE_TYPE_DISPLAY %>' />
+</liferay-portlet:renderURL>
+
+<%
+if ( showTemplateViewLink && ddmTemplate != null) {
+	String url = getTemplateViewURL(themeDisplay, ddmTemplate.getTemplateId());
+	if ( url != null ) {
+%>
+<liferay-ui:icon
+	id='<%= "viewCustomTemplate"+preferenceNamePrefix %>'
+	image="view_templates"
+	label="<%= true %>"
+	message='view-source'
+	url="<%= url %>"
+	target="_blank"
+/>
+<%
+	}
+}
+%>
+
+<%
+if ( showTemplateUpdateLink && ddmTemplate != null 
+	&& hasUpdateTemplatePermission(permissionChecker, ddmTemplate.getTemplateId())) {
+%>
+
+<liferay-ui:icon
+	id='<%= "updateDDMTemplate"+preferenceNamePrefix %>'
+	image="edit"
+	label="<%= true %>"
+	message='<%= LanguageUtil.get(locale, "edit-template") %>'
+	url="javascript:;"
+/>
+
+<aui:script use="aui-base">
+	var updateDDMTemplate = A.one('#<portlet:namespace />updateDDMTemplate<%= preferenceNamePrefix %>');
+
+	if (updateDDMTemplate) {
+		var windowId = A.guid();
+
+		updateDDMTemplate.on(
+			'click',
+			function(event) {
+				Liferay.Util.openDDMPortlet(
+					{
+						basePortletURL: '<%= basePortletURL %>',
+						classNameId: '<%= classNameId %>',
+						classPK: '<%= classPK %>',
+						dialog: {
+							width: 1024
+						},
+						groupId: <%= ddmTemplateGroupId %>,
+						templateId: <%= ddmTemplate.getTemplateId() %>,
+						refererPortletName: '<%= PortletKeys.PORTLET_DISPLAY_TEMPLATES %>',
+						struts_action: '/dynamic_data_mapping/edit_template',
+						title: '<%= UnicodeLanguageUtil.get(locale, label) %>'
+					},
+					function(event) {
+						if (!event.newVal) {
+							submitForm(document.<portlet:namespace /><%= formName %>, '<%= refreshURL %>');
+						}
+					}
+				);
+			}
+		);
+	}
+
+</aui:script>
+<%
+}
+%>
+
+<%
+if ( showTemplateCreateLink 
+	&& hasAddTemplatePermission(permissionChecker, ddmTemplateGroupId, classNameId)) {
+%>
+<liferay-ui:icon
+	id='<%= "createDDMTemplate"+preferenceNamePrefix %>'
+	image = "add_template_display"
+	label="<%= true %>"
+	message="add-template"
+	url="javascript:;"
+/>
+<aui:script use="aui-base">
+	var createDDMTemplate = A.one('#<portlet:namespace />createDDMTemplate<%= preferenceNamePrefix %>');
+
+	if (createDDMTemplate) {
+		var windowId = A.guid();
+
+		createDDMTemplate.on(
+			'click',
+			function(event) {
+				Liferay.Util.openDDMPortlet(
+					{
+						basePortletURL: '<%= basePortletURL %>',
+						classNameId: '<%= classNameId %>',
+						classPK: '<%= classPK %>',
+						dialog: {
+							width: 1024
+						},
+						showBackURL: 'false',
+						groupId: <%= ddmTemplateGroupId %>,
+						refererPortletName: '<%= PortletKeys.PORTLET_DISPLAY_TEMPLATES %>',
+						struts_action: '/dynamic_data_mapping/edit_template',
+						title: '<%= UnicodeLanguageUtil.get(locale, label) %>'
+					},
+					function(event) {
+						if (!event.newVal) {
+							submitForm(document.<portlet:namespace /><%= formName %>, '<%= refreshURL %>');
+						}
+					}
+				);
+			}
+		);
+	}
+
+</aui:script>
+<%
+}
+%>
 
 <liferay-ui:icon
 	id='<%= "selectDDMTemplate"+preferenceNamePrefix %>'
@@ -468,9 +523,24 @@ DDMTemplate ddmTemplate = null;
 	url="javascript:;"
 />
 
-<liferay-portlet:renderURL plid="<%= themeDisplay.getPlid() %>" portletName="<%= PortletKeys.DYNAMIC_DATA_MAPPING %>" var="basePortletURL">
-	<portlet:param name="showHeader" value="<%= Boolean.FALSE.toString() %>" />
-</liferay-portlet:renderURL>
+<%
+if (Validator.isNotNull(referenceTemplateURI)) {
+	long templateId = ADTTemplateLoaderUtil.getTemplateId(referenceTemplateURI);
+	String url = getTemplateViewURL(themeDisplay, templateId);
+	if ( url != null ) {
+%>
+<liferay-ui:icon
+	id='<%= "viewBaseTemplate"+preferenceNamePrefix %>'
+	image="view_templates"
+	label="<%= true %>"
+	message='<%= LanguageUtil.get(locale, "View Example") %>'
+	url="<%= url %>"
+	target="_blank"
+/>
+<%
+	}
+}
+%>
 
 <aui:script use="aui-base">
 	var selectDDMTemplate = A.one('#<portlet:namespace />selectDDMTemplate<%= preferenceNamePrefix %>');
@@ -492,7 +562,7 @@ DDMTemplate ddmTemplate = null;
 						groupId: <%= ddmTemplateGroupId %>,
 						refererPortletName: '<%= PortletKeys.PORTLET_DISPLAY_TEMPLATES %>',
 						struts_action: '/dynamic_data_mapping/view_template',
-						title: '<%= UnicodeLanguageUtil.get(locale, "application-display-templates") %>'
+						title: '<%= UnicodeLanguageUtil.get(locale, label) %>'
 					},
 					function(event) {
 						if (!event.newVal) {
@@ -525,3 +595,64 @@ DDMTemplate ddmTemplate = null;
 		}
 	);
 </aui:script>
+
+<%!
+private static Log _log = LogFactoryUtil.getLog("com.brownstonetech.jsp.LiferaySpring");
+
+private static String getTemplateViewURL(ThemeDisplay themeDisplay, long templateId) {
+	PermissionChecker permissionChecker = themeDisplay.getPermissionChecker();
+	if ( templateId == 0 || !hasViewTemplatePermission(permissionChecker, templateId) ) {
+		return null;
+	}
+	return themeDisplay.getPortalURL() + themeDisplay.getPathMain() + "/dynamic_data_mapping/get_template?templateId=" + templateId;
+}
+
+private static boolean hasViewTemplatePermission(PermissionChecker permissionChecker, long templateId) {
+	try {
+		return DDMTemplatePermission.contains(permissionChecker, templateId, 
+				PortletKeys.PORTLET_DISPLAY_TEMPLATES, ActionKeys.VIEW);
+	} catch (Exception e) {
+		_log.error("Check DDM template permission failed",e);
+	}
+	return false;
+}
+
+private static boolean hasUpdateTemplatePermission(PermissionChecker permissionChecker, long templateId) {
+	try {
+		return DDMTemplatePermission.contains(permissionChecker, templateId, 
+				PortletKeys.PORTLET_DISPLAY_TEMPLATES, ActionKeys.UPDATE);
+	} catch (Exception e) {
+		_log.error("Check DDM template permission failed",e);
+	}
+	return false;
+}
+
+private static boolean hasAddTemplatePermission(PermissionChecker permissionChecker, long scopeGroupId,
+		long classNameId) {
+	TemplateHandler templateHandler = TemplateHandlerRegistryUtil.getTemplateHandler(classNameId);
+	if ( templateHandler == null ) return false;
+	return DDMPermission.contains(permissionChecker, scopeGroupId, templateHandler.getResourceName(), ActionKeys.ADD_PORTLET_DISPLAY_TEMPLATE);
+}
+
+private static List<DDMTemplate> filterTemplates(PermissionChecker permissionChecker,
+		List<DDMTemplate> src, 
+		boolean showBuiltinTemplates, boolean showCustomTemplates) {
+	if ( src == null ) return src;
+	List<DDMTemplate> ret = new ArrayList<DDMTemplate>(src.size());
+	for ( DDMTemplate template: src ) {
+		if (!DDMTemplatePermission.contains(permissionChecker, template, 
+				PortletKeys.PORTLET_DISPLAY_TEMPLATES, ActionKeys.VIEW)) {
+			continue;
+		}
+		boolean builtinTemplate = "builtin".equals(template.getMode());
+		if ( builtinTemplate && !showBuiltinTemplates) {
+			continue;
+		}
+		if ( !builtinTemplate && !showCustomTemplates ) {
+			continue;
+		}
+		ret.add(template);
+	}
+	return ret;
+}
+%>
