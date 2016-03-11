@@ -19,24 +19,15 @@
 
 package com.brownstonetech.springliferay.util.dynamicdatalist;
 
-import com.liferay.portal.kernel.json.JSONException;
-import com.liferay.portal.kernel.json.JSONFactoryUtil;
-import com.liferay.portal.kernel.json.JSONObject;
-import com.liferay.portal.kernel.log.Log;
-import com.liferay.portal.kernel.log.LogFactoryUtil;
-import com.liferay.portal.kernel.repository.model.FileEntry;
 import com.liferay.portal.kernel.util.GetterUtil;
-import com.liferay.portal.kernel.util.HtmlUtil;
-import com.liferay.portal.kernel.util.HttpUtil;
 import com.liferay.portal.kernel.util.StringPool;
-import com.liferay.portal.kernel.util.Validator;
-import com.liferay.portal.security.auth.PrincipalException;
 import com.liferay.portal.theme.ThemeDisplay;
-import com.liferay.portlet.documentlibrary.NoSuchFileEntryException;
-import com.liferay.portlet.documentlibrary.service.DLAppServiceUtil;
+import com.liferay.portlet.dynamicdatamapping.model.DDMStructure;
 import com.liferay.portlet.dynamicdatamapping.storage.FieldConstants;
 
 import java.io.Serializable;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * @author Miles Huang
@@ -47,23 +38,36 @@ public class TemplateNode extends com.liferay.portal.kernel.templateparser.Templ
 	 * 
 	 */
 	private static final long serialVersionUID = 1L;
-	private static Log _log = LogFactoryUtil.getLog(TemplateNode.class);
+	private static Map<String, TemplateNodeTypeHandler> handlers;
 	
-	private String url;
-	private ThemeDisplay themeDisplay;
-	private String fileName=StringPool.BLANK;
+	public static final String NODE_ATTR_URL="url";
+	public static final String NODE_ATTR_FILE_NAME = "fileName";
+
+	public interface TemplateNodeTypeHandler {
+		public void handle(DDMStructure ddmStructure, TemplateNode templateNode, ThemeDisplay themeDisplay);
+
+		public String getType();
+	}
+
+	public static void registerHandler(TemplateNodeTypeHandler handler) {
+		handlers.put(handler.getType(), handler);
+	}
 	
-	
+	static {
+		handlers = new HashMap<String, TemplateNodeTypeHandler>();
+		registerHandler(new DDMDocumentLibraryHandler());
+		registerHandler(new DDMLinkToPageHadler());
+	}
+		
 	public TemplateNode(
-		ThemeDisplay themeDisplay, String name, String data, String type,
+		ThemeDisplay themeDisplay, DDMStructure ddmStructure, String name, String data, String type,
 		String dataType, Serializable value, String label) {
 
 		super(themeDisplay, name, data, type);
-		this.themeDisplay = themeDisplay;
 		this.setDataType(dataType);
 		this.setLabel(label);
 		this.setValue(value);
-		generateUrl();
+		postProcess(ddmStructure, this, themeDisplay);
 	}
 
 	private void setValue(Serializable value) {
@@ -91,77 +95,20 @@ public class TemplateNode extends com.liferay.portal.kernel.templateparser.Templ
 	}
 
 	public String getFileName() {
-		return fileName;
+		return (String)get(NODE_ATTR_FILE_NAME);
 	}
 	
 	@Override
 	public String getUrl() {
-		return url;
-	}
-	
-	private void generateUrl() {
-		String url = StringPool.BLANK;
-		if ( getType().equals(DDMFieldTypes.TYPE_DDM_DOCUMENTLIBRARY) ) {
-			url = genDLDownloadURL();
-		} else if ( getType().equals(DDMFieldTypes.TYPE_DDM_FILEUPLOAD) ){
-			url = genUploadFieldDownloadURL();
-		} else {
-			url = super.getUrl();
-		}
-		this.url = url;
-		this.put("url", url);
+		return (String)get(NODE_ATTR_URL);
 	}
 
-	private String genDLDownloadURL() {
-		String value = (String)getValue();
-		String url = StringPool.BLANK;
-		if ( Validator.isNotNull(value)) {
-			try {
-				JSONObject fileJSONObject = JSONFactoryUtil.createJSONObject(value);
-				String fileEntryUUID=fileJSONObject.getString("uuid");
-				long scopeGroupId=fileJSONObject.getLong("groupId");
-				FileEntry fileEntry = DLAppServiceUtil.getFileEntryByUuidAndGroupId(fileEntryUUID, scopeGroupId);
-				fileName = HtmlUtil.unescape(fileEntry.getTitle());
-				StringBuilder sb = new StringBuilder(themeDisplay.getPathContext())
-					.append("/documents/").append(fileEntry.getRepositoryId()).append('/')
-					.append(fileEntry.getFolderId()).append('/').append(HttpUtil.encodeURL(fileName, true))
-					.append('/').append(fileEntry.getUuid());
-				url = sb.toString();
-			} catch (JSONException e) {
-				_log.error("Failed to generate DL download url because of invalid JSON string: " +value);
-			} catch (NoSuchFileEntryException e) {
-				if ( _log.isDebugEnabled() ) {
-					_log.debug("Can't generate DL download url because file entry not exist: "+value);
-				}
-			} catch (PrincipalException e) {
-				if ( _log.isDebugEnabled() ) {
-					_log.debug("Can't generate DL download url because user have no permission: "+value);
-				}
-			} catch (Exception e) {
-				_log.error("Failed to generate DL download url because of unexpected Exception: "+value, e);
-			}
+	private static void postProcess(DDMStructure ddmStructure, TemplateNode templateNode, ThemeDisplay themeDisplay) {
+		String type = templateNode.getType();
+		TemplateNodeTypeHandler handler = handlers.get(type);
+		if ( handler != null) {
+			handler.handle(ddmStructure, templateNode, themeDisplay);
 		}
-		return url;
-	}
-	
-	private String genUploadFieldDownloadURL() {
-		String value = (String)getValue();
-		String url = StringPool.BLANK;
-		if ( Validator.isNotNull(value)) {
-			try {
-				JSONObject fileJSONObject = JSONFactoryUtil.createJSONObject(value);
-				fileName=fileJSONObject.getString("name");
-				String className=fileJSONObject.getString("className");
-				String classPK=fileJSONObject.getString("classPK");
-				StringBuilder sb = new StringBuilder();
-				sb.append("/documents/ddm/").append(className).append('/').append(classPK)
-					.append('/').append(fileName);
-				url = sb.toString();
-			} catch (JSONException e) {
-				_log.error("Failed to generate Upload field download url because of invalid JSON string: " +value);
-			}
-		}
-		return url;
 	}
 	
 }

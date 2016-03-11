@@ -55,13 +55,11 @@ public class DDLExtUtil extends DDLUtil {
 
 	private static final Map<String,DDLRecordMetaFieldInfo> RESERVED_COLUMNS = new LinkedHashMap<String,DDLRecordMetaFieldInfo>();
 	private static final Map<String,String> FIELD_DATA_TYPE_CLASSNAME;
+	private static Map<String, StructureRenderModelTypeHandler> handlers;
 	private static Log _log = LogFactoryUtil.getLog(DDLExtUtil.class);
-
-//	private static Set<String> DYNAMIC_DATA_MAPPING_STRUCTURE_PRIVATE_FIELD_NAMES
-//		= new HashSet<String>(
-//			ListUtil.fromArray(PropsUtil.getArray(
-//					PropsKeys.DYNAMIC_DATA_MAPPING_STRUCTURE_PRIVATE_FIELD_NAMES)));
-
+	
+	public static final String STRUCTURE_FIELD_OPTIONS = "options";
+	
 	static {
 		RESERVED_COLUMNS.put("displayIndex",
 				new DDLRecordMetaFieldInfo("reservedDisplayIndex", "display-index", "int", null));
@@ -107,6 +105,11 @@ public class DDLExtUtil extends DDLUtil {
 		FIELD_DATA_TYPE_CLASSNAME.put(FieldConstants.NUMBER, BigDecimal.class.getName());
 		FIELD_DATA_TYPE_CLASSNAME.put(FieldConstants.SHORT, Short.class.getName());
 //		FIELD_DATA_TYPE_CLASSNAME.put(FieldConstants.STRING, String.class.getName());
+		
+		handlers = new HashMap<String, StructureRenderModelTypeHandler>();
+		StructureRenderModelTypeHandler selectHandler = new SelectHandler();
+		registerHandler(DDMFieldTypes.TYPE_SELECT, selectHandler);
+		registerHandler(DDMFieldTypes.TYPE_RADIO, selectHandler);
 	}
 	
 	private static class DDLRecordMetaFieldInfo {
@@ -142,6 +145,15 @@ public class DDLExtUtil extends DDLUtil {
 
 	}
 	
+	public interface StructureRenderModelTypeHandler {
+		public void handle(Map<String, Serializable> structureFieldModel, 
+				DDMStructure ddmStructure, String languageId);
+	}
+
+	public static void registerHandler(String type, StructureRenderModelTypeHandler handler) {
+		handlers.put(type, handler);
+	}
+	
 	/**
 	 * Get a data model for the given DDL record for render template access.
 	 *
@@ -175,23 +187,23 @@ public class DDLExtUtil extends DDLUtil {
 //		getStructureFields(
 //				themeDisplay, columns, ddmStructure);
 		
-		TemplateNode fieldNode = new TemplateNode(themeDisplay, "reservedDisplayIndex",
+		TemplateNode fieldNode = new TemplateNode(themeDisplay, null, "reservedDisplayIndex",
 				String.valueOf(record.getDisplayIndex()), FieldConstants.INTEGER, 
 				DDMFieldTypes.TYPE_INT_NUMBER, record.getDisplayIndex(), "reservedDisplayIndex");
 		dataModel.put(fieldNode.getName(), fieldNode);
 		
-		fieldNode = new TemplateNode(themeDisplay, "reservedRecordId",
+		fieldNode = new TemplateNode(themeDisplay, null, "reservedRecordId",
 				String.valueOf(record.getRecordId()), FieldConstants.LONG,
 				DDMFieldTypes.TYPE_INT_NUMBER, record.getRecordId(), "reservedRecordId");
 		dataModel.put(fieldNode.getName(), fieldNode);
 		
-		fieldNode = new TemplateNode(themeDisplay, "reservedCreateUserId",
+		fieldNode = new TemplateNode(themeDisplay, null, "reservedCreateUserId",
 				String.valueOf(record.getUserId()), FieldConstants.LONG,
 				DDMFieldTypes.TYPE_INT_NUMBER, record.getUserId(), "reservedCreateUserId");
 		dataModel.put(fieldNode.getName(), fieldNode);
 
 		String userName = PortalUtil.getUserName(record.getUserId(), record.getUserName());
-		fieldNode = new TemplateNode(themeDisplay, "reservedCreateUserName",
+		fieldNode = new TemplateNode(themeDisplay, null, "reservedCreateUserName",
 				userName, FieldConstants.STRING,
 				DDMFieldTypes.TYPE_TEXT, userName, "reservedCreateUserName");
 		dataModel.put(fieldNode.getName(), fieldNode);
@@ -200,43 +212,43 @@ public class DDLExtUtil extends DDLUtil {
 				themeDisplay.getLocale(), themeDisplay.getTimeZone());
 
 		String date = dateFormatDateTime.format(record.getCreateDate());
-		fieldNode = new TemplateNode(themeDisplay, "reservedCreateDate",
+		fieldNode = new TemplateNode(themeDisplay, null, "reservedCreateDate",
 				date, FieldConstants.DATE,
 				DDMFieldTypes.TYPE_DDM_DATE, record.getCreateDate(), "reservedCreateDate");
 		dataModel.put(fieldNode.getName(), fieldNode);
 
 		String uuid = record.getUuid();
-		fieldNode = new TemplateNode(themeDisplay, "reservedUuid",
+		fieldNode = new TemplateNode(themeDisplay, null, "reservedUuid",
 				uuid, FieldConstants.STRING,
 				DDMFieldTypes.TYPE_TEXT, uuid, "reservedUuid");
 		dataModel.put(fieldNode.getName(), fieldNode);
 		
 		long groupId = record.getGroupId();
-		fieldNode = new TemplateNode(themeDisplay, "reservedGroupId",
+		fieldNode = new TemplateNode(themeDisplay, null, "reservedGroupId",
 				String.valueOf(groupId), FieldConstants.LONG,
 				DDMFieldTypes.TYPE_INT_NUMBER, groupId, "reservedGroupId");
 		dataModel.put(fieldNode.getName(), fieldNode);
 		
-		fieldNode = new TemplateNode(themeDisplay, "reservedModifiedUserId",
+		fieldNode = new TemplateNode(themeDisplay, null, "reservedModifiedUserId",
 				String.valueOf(recordVersion.getUserId()), FieldConstants.LONG,
 				DDMFieldTypes.TYPE_INT_NUMBER, recordVersion.getUserId(), "reservedModifiedUserId");
 		dataModel.put(fieldNode.getName(), fieldNode);
 
 		userName = PortalUtil.getUserName(recordVersion.getUserId(), recordVersion.getUserName());
-		fieldNode = new TemplateNode(themeDisplay, "reservedModifiedUserName",
+		fieldNode = new TemplateNode(themeDisplay, null, "reservedModifiedUserName",
 				userName, FieldConstants.STRING,
 				DDMFieldTypes.TYPE_TEXT, userName, "reservedModifiedUserName");
 		dataModel.put(fieldNode.getName(), fieldNode);
 
 		date = dateFormatDateTime.format(record.getModifiedDate());
-		fieldNode = new TemplateNode(themeDisplay, "reservedModifiedDate",
+		fieldNode = new TemplateNode(themeDisplay, null, "reservedModifiedDate",
 				date, FieldConstants.DATE,
 				DDMFieldTypes.TYPE_DDM_DATE, record.getModifiedDate(), "reservedModifiedDate");
 		dataModel.put(fieldNode.getName(), fieldNode);
 
 		String status = LanguageUtil.get(themeDisplay.getLocale(), 
 				WorkflowConstants.getStatusLabel(recordVersion.getStatus()));
-		fieldNode = new TemplateNode(themeDisplay, "reservedStatus",
+		fieldNode = new TemplateNode(themeDisplay, null, "reservedStatus",
 				status, FieldConstants.STRING,
 				DDMFieldTypes.TYPE_TEXT, status, "reservedStatus");
 		dataModel.put(fieldNode.getName(), fieldNode);
@@ -287,7 +299,7 @@ public class DDLExtUtil extends DDLUtil {
 				}
 			}
 
-			fieldNode = new TemplateNode(themeDisplay, name, data, type, dataType, value, label);
+			fieldNode = new TemplateNode(themeDisplay, ddmStructure, name, data, type, dataType, value, label);
 			dataModel.put(name, fieldNode);
 			
 		}
@@ -341,6 +353,32 @@ public class DDLExtUtil extends DDLUtil {
 			fields.put(name, label);
 		}
 		return fields;
+	}
+
+	public static Map<String, Map<String, Serializable>> getStructureRenderModel(
+			DDMStructure ddmStructure, String languageId, boolean includePrivate) throws PortalException, SystemException {
+		Map<String, Map<String, String>> fieldsMap = ddmStructure.getFieldsMap(
+				languageId);
+		Map<String, Map<String, Serializable>> ret
+			= new LinkedHashMap<String, Map<String,Serializable>>(fieldsMap.size());
+		for ( String fieldName : fieldsMap.keySet()) {
+			Map<String, String> fieldMap = fieldsMap.get(fieldName);
+			Map<String, Serializable> structureFieldModel = new HashMap<String, Serializable>(fieldMap);
+			ret.put(fieldName, structureFieldModel);
+			if ( !includePrivate ) {
+				if (GetterUtil.getBoolean(fieldMap.get(FieldConstants.PRIVATE))) {
+					continue;
+				}
+			}
+			// TODO: do any type conversion as need
+			String type = fieldMap.get(FieldConstants.TYPE);
+			StructureRenderModelTypeHandler handler = handlers.get(type);
+			if ( handler != null ) {
+				handler.handle(structureFieldModel, ddmStructure, languageId);
+			}
+		}
+		return ret;
+		
 	}
 	
 	/**
