@@ -234,5 +234,45 @@ public class PrimitiveArrayUtil {
 		}
 		return Arrays.copyOf(ret, count);
 	}
+
+	public static List<String> arrayToStringList(Object array) {
+		if ( array == null ) return null;
+		if ( !array.getClass().isArray() ) return null;
+		Class<?> componentType = array.getClass().getComponentType();
+		if ( componentType == null) return null;
+		if ( String.class.isAssignableFrom(componentType)) {
+			List<String> ret = Arrays.asList((String[])array);
+			return ret;
+		}
+		List<?> list = null;
+		if (Object.class.isAssignableFrom(componentType)) {
+			list = Arrays.asList((Object[])array);
+		} else if ( long.class.isAssignableFrom(componentType) ) {
+			list = asList((long[])array);
+		} else if ( int.class.isAssignableFrom(componentType) ) {
+			list = asList((int[])array);
+		} else if ( char.class.isAssignableFrom(componentType ) ) {
+			list = asList((char[])array);
+		} else if ( short.class.isAssignableFrom(componentType ) ) {
+			list = asList((short[])array);
+		} else if ( byte.class.isAssignableFrom(componentType)) {
+			list = asList((byte[])array);
+		} else if ( boolean.class.isAssignableFrom(componentType)) {
+			list = asList((boolean[])array);
+		} else if ( double.class.isAssignableFrom(componentType)) {
+			list = asList((double[])array);
+		} else if ( float.class.isAssignableFrom(componentType)) {
+			list = asList((float[])array);
+		}
+		if ( list == null ) {
+			return null;
+		}
+		List<String> ret = new ArrayList<String>(list.size());
+		for ( Object e: list ) {
+			if ( e == null ) continue;
+			ret.add(String.valueOf(e));
+		}
+		return ret;
+	}
 	
 }

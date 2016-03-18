@@ -102,8 +102,11 @@ public abstract class LiferaySearchControllerSupport<E, S extends DisplayTerms> 
 			// Exclude some parameters we don't want to inherit
 			// for search form submit URL and also
 			// Links in the search result table.
-			if ( entry.getKey().equals("formDate")) iter.remove();
-			if ( entry.getKey().endsWith("searchContainerPrimaryKeys")) iter.remove();
+			String paramName = entry.getKey();
+			if ( paramName.equals("formDate")
+					|| paramName.endsWith("searchContainerPrimaryKeys")) {
+				iter.remove();
+			}
 		}
 		currentURLObj.setParameters(params);
 		

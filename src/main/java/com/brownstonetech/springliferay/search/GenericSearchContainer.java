@@ -1,7 +1,11 @@
 package com.brownstonetech.springliferay.search;
 
 import java.beans.PropertyDescriptor;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
 
 import javax.portlet.PortletRequest;
 import javax.portlet.PortletURL;
@@ -10,6 +14,7 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.beans.BeanWrapper;
 import org.springframework.beans.BeanWrapperImpl;
 
+import com.brownstonetech.springliferay.util.PrimitiveArrayUtil;
 import com.liferay.portal.kernel.dao.search.DisplayTerms;
 import com.liferay.portal.kernel.dao.search.SearchContainer;
 
@@ -30,6 +35,7 @@ public class GenericSearchContainer<E,S extends DisplayTerms> extends SearchCont
 		for ( PropertyDescriptor descriptor: descriptors ) {
 			baseProperties.add(descriptor.getName());
 		}
+		baseProperties.add("metaClass");
 	}
 	
 	public GenericSearchContainer(PortletRequest portletRequest, PortletURL iteratorURL, S searchTerm) {
@@ -65,8 +71,37 @@ public class GenericSearchContainer<E,S extends DisplayTerms> extends SearchCont
 	 * @param propertyValue
 	 */
 	protected void addParameter(PortletURL iteratorURL, String propertyName, Object propertyValue) {
+		if ( propertyValue == null ) return;
+		if ( propertyValue instanceof Collection ) {
+			Collection<?> c = (Collection<?>)propertyValue;
+			if ( c.size() > 0 ) {
+				List<String> params = new ArrayList<String>(c.size());
+				Iterator<?> iter = c.iterator();
+				while ( iter.hasNext()) {
+					Object e = iter.next();
+					if ( e == null ) continue;
+					params.add(String.valueOf(e));
+				}
+				if ( params.size() > 0 ) {
+					addParameter(iteratorURL, propertyName, params);
+				}
+			}
+			return;
+		}
+		if ( propertyValue.getClass().isArray()) {
+			List<String> list = PrimitiveArrayUtil.arrayToStringList(propertyValue);
+			if ( list != null && list.size() > 0 ) {
+				addParameter(iteratorURL, propertyName, list);
+			}
+			return;
+		}
 		iteratorURL.setParameter(
 				propertyName, String.valueOf(propertyValue));
 	}
-	
+
+	protected void addParameter(PortletURL iteratorURL, String propertyName, List<String> propertyValues) {
+		if ( propertyValues == null || propertyValues.size() == 0 ) return;
+		iteratorURL.setParameter(
+				propertyName, propertyValues.toArray(new String[propertyValues.size()]));
+	}
 }

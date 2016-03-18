@@ -37,6 +37,7 @@ import com.liferay.portal.kernel.util.FastDateFormatFactoryUtil;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.LocaleUtil;
 import com.liferay.portal.kernel.util.StringPool;
+import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.kernel.workflow.WorkflowConstants;
 import com.liferay.portal.theme.ThemeDisplay;
 import com.liferay.portal.util.PortalUtil;
@@ -49,7 +50,6 @@ import com.liferay.portlet.dynamicdatamapping.storage.Field;
 import com.liferay.portlet.dynamicdatamapping.storage.FieldConstants;
 import com.liferay.portlet.dynamicdatamapping.storage.Fields;
 import com.liferay.portlet.dynamicdatamapping.storage.StorageEngineUtil;
-import com.liferay.portlet.dynamicdatamapping.util.DDMIndexerUtil;
 
 public class DDLExtUtil extends DDLUtil {
 
@@ -468,28 +468,32 @@ public class DDLExtUtil extends DDLUtil {
 	public static String getRecordFieldIndexName(DDMStructure structure, String fieldName, Locale locale, boolean ignoreCase)
 			throws PortalException, SystemException {
 		long structureId = structure.getStructureId();
-		// TODO: do we still need extension to index keyword field ignore case?
-//		try {
-//			if ( isKeywordStringField(structure, fieldName )) {
-//				return DDMKeywordIndexerUtil.encodeName(structureId, fieldName, ignoreCase);
-//			}
-			return DDMIndexerUtil.encodeName(structureId, fieldName, locale);
-//		} catch (StructureFieldException e) {
-//			return null;
-//		}
+		return DDMKeywordIndexerUtil.encodeName(structureId, fieldName, locale, ignoreCase);
 	}
 
-//	TODO: implement according to LP6.2 field setting
-//	public static boolean isKeywordStringField(DDMStructure structure,
-//			String fieldName) throws PortalException, SystemException {
-//		structure.getField
-//		String type = structure.getFieldType(fieldName);
-//		String dataType = structure.getFieldDataType(fieldName);
-//		if ( FieldConstants.STRING.equals(dataType)
-//				&& !"textarea".equals(type)) {
-//			return true;
-//		}
-//		return false;
-//	}
+	public static boolean isFieldKeywordIndexType(DDMStructure ddmStructure,
+			String fieldName) throws PortalException, SystemException {
+		String indexType = ddmStructure.getFieldProperty(
+				fieldName, "indexType");
+
+		String structureKey = ddmStructure.getStructureKey();
+
+		if (structureKey.equals("TIKARAWMETADATA")) {
+			indexType = "text";
+		}
+
+		if (Validator.isNull(indexType)) {
+			return false;
+		}
+		
+		return indexType.equals("keyword");
+	}
+
+	public static boolean isFieldLocalizable(DDMStructure ddmStructure, String fieldName)
+		throws PortalException, SystemException {
+		boolean localizable = GetterUtil.getBoolean(
+				ddmStructure.getFieldProperty(fieldName, "localizable"), true);
+		return localizable;
+	}
 	
 }
