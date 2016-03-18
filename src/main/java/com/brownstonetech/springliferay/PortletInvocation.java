@@ -14,11 +14,13 @@ import javax.servlet.ServletContext;
 import com.liferay.portal.kernel.exception.SystemException;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
+import com.liferay.portal.kernel.portlet.LiferayPortletURL;
 import com.liferay.portal.kernel.portlet.LiferayWindowState;
 import com.liferay.portal.kernel.portlet.PortletBagPool;
 import com.liferay.portal.model.User;
 import com.liferay.portal.security.permission.PermissionChecker;
 import com.liferay.portal.theme.ThemeDisplay;
+import com.liferay.portlet.PortletURLFactoryUtil;
 
 /**
  * The PortletInvocation contains context information of current portlet
@@ -215,6 +217,15 @@ public class PortletInvocation implements Serializable {
 		return companyTimeZone;
 	}
 	
+	public LiferayPortletURL createRenderURL() {
+		LiferayPortletURL url = PortletURLFactoryUtil.create(
+				portletRequest,
+				getPortletId(), getPlid(), 
+				PortletRequest.RENDER_PHASE);
+		return url;
+	}
+	
 	private static Log _log = LogFactoryUtil.getLog(PortletInvocation.class);
+
 	
 }

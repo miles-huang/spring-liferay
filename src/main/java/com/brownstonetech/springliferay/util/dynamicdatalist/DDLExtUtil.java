@@ -317,6 +317,7 @@ public class DDLExtUtil extends DDLUtil {
 	 * in the given language Id.
 	 * @throws SystemException 
 	 * @throws PortalException 
+	 * @deprecated Replaced by {@link #getStructureRenderModel(DDMStructure, String, boolean)}
 	 */
 	public static Map<String, String> getStructureDefinedFields(
 			DDMStructure ddmStructure, String languageId) throws PortalException, SystemException {
@@ -334,6 +335,7 @@ public class DDLExtUtil extends DDLUtil {
 	 * in the given language Id.
 	 * @throws SystemException 
 	 * @throws PortalException 
+	 * @deprecated Replaced by {@link #getStructureRenderModel(DDMStructure, String, boolean)}
 	 */
 	public static Map<String, String> getStructureDefinedFields(
 			DDMStructure ddmStructure, String languageId, boolean includePrivate) throws PortalException, SystemException {
@@ -370,7 +372,6 @@ public class DDLExtUtil extends DDLUtil {
 					continue;
 				}
 			}
-			// TODO: do any type conversion as need
 			String type = fieldMap.get(FieldConstants.TYPE);
 			StructureRenderModelTypeHandler handler = handlers.get(type);
 			if ( handler != null ) {
