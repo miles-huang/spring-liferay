@@ -20,6 +20,8 @@ manage application to create/edit existing templates" %>
 	description="the url for navigation back from manage template" %>
 <%@ attribute name="showEmptyOption" required="false" rtexprvalue="true" type="Boolean" 
 	description="Is show Default option in the template list for custom template not defined case" %>
+<%@ attribute name="emptyOptionLabel" required="false" rtexprvalue="true" type="String" 
+	description="Resource key for empty option label. Default is 'default'" %>	
 <%@ attribute name="preferenceNamePrefix" required="false" rtexprvalue="true" type="String" 
 	description="A prefix added to portlet preference name displayStyle and displayStyleGroupId. To support multiple ADT definition case.
 	 If not provided there is no prefix added.
@@ -38,6 +40,10 @@ manage application to create/edit existing templates" %>
 	description="If provided, will also include a link to show the template using the template key as reference template in a separatec window/tab" %>
 <%@ attribute name="formName" required="false" rtexprvalue="true" type="String"
 	description="The form to submit after some configuration changed. Default is 'fm'" %>
+<%@ attribute name="preferenceName" required="false" rtexprvalue="true" type="String"
+	description="The perference name (suffix) used for storing configured preference. Default is 'DisplayStyle'" %>
+<%@ attribute name="manageLinkLabel" required="false" rtexprvalue="true" type="String"
+	description="Label resource key for display ddmTempalte manage link. Default is 'manage-display-templates-for-x'" %>
 
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
  
@@ -276,13 +282,20 @@ tag import="javax.portlet.WindowState" %>
 if ( preferenceNamePrefix == null ) {
 	preferenceNamePrefix = StringPool.BLANK;
 }
-String displayStyleGroupIdName = "displayStyleGroupId";
-if ( Validator.isNotNull(preferenceNamePrefix)) {
-	displayStyleGroupIdName = preferenceNamePrefix+"DisplayStyleGroupId";
+
+if ( preferenceName == null ) {
+	preferenceName = "displayStyle";
 }
-String displayStyleName = "displayStyle";
+String preferenceNameUc = StringUtil.upperCaseFirstLetter(preferenceName);
+
+String displayStyleGroupIdName = preferenceName+"GroupId";
 if ( Validator.isNotNull(preferenceNamePrefix)) {
-	displayStyleName = preferenceNamePrefix+"DisplayStyle";
+	displayStyleGroupIdName = preferenceNamePrefix+preferenceNameUc+"GroupId";
+}
+
+String displayStyleName = preferenceName;
+if ( Validator.isNotNull(preferenceNamePrefix)) {
+	displayStyleName = preferenceNamePrefix+preferenceNameUc;
 }
 if ( Validator.isNull(icon) ) icon = "configuration";
 if ( Validator.isNull(label)) label ="display-template";
@@ -296,6 +309,8 @@ if ( null == showTemplateViewLink ) showTemplateViewLink = true;
 if ( null == showTemplateCreateLink ) showTemplateCreateLink = true;
 if ( null == showTemplateUpdateLink ) showTemplateUpdateLink = true;
 if ( Validator.isNull(formName)) formName = "fm";
+if ( null == manageLinkLabel) manageLinkLabel = "manage-display-templates-for-x";
+if ( null == emptyOptionLabel ) emptyOptionLabel = "default";
 
 long ddmTemplateGroupId = PortletDisplayTemplateUtil.getDDMTemplateGroupId(themeDisplay.getScopeGroupId());
 
@@ -309,7 +324,7 @@ DDMTemplate ddmTemplate = null;
 
 <aui:select id="<%= displayStyleName %>" inlineField="<%= true %>" label="<%= label %>" name='<%="preferences--"+displayStyleName+"--" %>' >
 	<c:if test="<%= showEmptyOption %>">
-		<aui:option label="default" selected="<%= Validator.isNull(displayStyle) %>" />
+		<aui:option label="<%= emptyOptionLabel %>" selected="<%= Validator.isNull(displayStyle) %>" />
 	</c:if>
 
 	<c:if test="<%= (displayStyles != null) && !displayStyles.isEmpty() %>">
@@ -424,7 +439,7 @@ if ( showTemplateUpdateLink && ddmTemplate != null
 	id='<%= "updateDDMTemplate"+preferenceNamePrefix %>'
 	iconCssClass="icon-edit"
 	label="<%= true %>"
-	message='<%= LanguageUtil.get(locale, "edit-template") %>'
+	message="edit"
 	url="javascript:;"
 />
 
@@ -474,7 +489,7 @@ if ( showTemplateCreateLink
 	id='<%= "createDDMTemplate"+preferenceNamePrefix %>'
 	iconCssClass="icon-plus"
 	label="<%= true %>"
-	message="add-template"
+	message="add"
 	url="javascript:;"
 />
 <aui:script use="aui-base">
@@ -519,7 +534,7 @@ if ( showTemplateCreateLink
 	id='<%= "selectDDMTemplate"+preferenceNamePrefix %>'
 	iconCssClass="icon-cog"
 	label="<%= true %>"
-	message='<%= LanguageUtil.format(locale, "manage-display-templates-for-x", HtmlUtil.escape(ddmTemplateGroup.getDescriptiveName(locale)), false) %>'
+	message='<%= LanguageUtil.format(locale, manageLinkLabel, HtmlUtil.escape(ddmTemplateGroup.getDescriptiveName(locale)), false) %>'
 	url="javascript:;"
 />
 
@@ -533,7 +548,7 @@ if (Validator.isNotNull(referenceTemplateURI)) {
 	id='<%= "viewBaseTemplate"+preferenceNamePrefix %>'
 	iconCssClass="icon-book"
 	label="<%= true %>"
-	message='<%= LanguageUtil.get(locale, "View Example") %>'
+	message='label.dem.view-example'
 	url="<%= url %>"
 	target="_blank"
 />

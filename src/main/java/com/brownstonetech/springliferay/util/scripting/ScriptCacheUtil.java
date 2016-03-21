@@ -1,8 +1,5 @@
 package com.brownstonetech.springliferay.util.scripting;
 
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.Reader;
 import java.io.Serializable;
 import java.util.Date;
 
@@ -13,12 +10,14 @@ import com.liferay.portal.kernel.cache.SingleVMPoolUtil;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.util.Validator;
-import com.liferay.portlet.documentlibrary.model.DLFileEntry;
+import com.liferay.portlet.dynamicdatamapping.model.DDMTemplate;
+import com.liferay.portlet.portletdisplaytemplate.util.PortletDisplayTemplateUtil;
 
 /**
- * TODO is this class still used anywhere?
+ * Cache script in VM cache. 
+ * Loading script from DDMTemplate implementation and Cache the loaded
+ * script in Liferay VM cache.
  * @author Miles Huang
- *
  */
 public class ScriptCacheUtil implements Serializable {
 
@@ -32,19 +31,21 @@ public class ScriptCacheUtil implements Serializable {
 	private static final CachedScript NO_SCRIPT_DEFINED = new CachedScript(new Date(0L), null);
 
 	public static CachedScript getScript(String cacheKey, long scopeGroupId, 
-			PortletPreferences preference, String scriptPath, String tracePortletContext) {
+			PortletPreferences preference, String scriptKey, String tracePortletContext) {
 		PortalCache<Serializable, Object> scriptCache
 			= SingleVMPoolUtil.getCache(GROOVY_SCRIPT_CACHE_KEY);
 		CachedScript cachedScript;
 		try {
 			cachedScript = (CachedScript)scriptCache.get(cacheKey);
 		} catch (ClassCastException e1) {
-			// This is caused by plugin reload, need to invalidate
+			// This might caused by plugin reload, need to invalidate
 			// old cached script
+			_log.info("Detect CaheScript class reload, discard old cached script.");
 			scriptCache.remove(cacheKey);
 			cachedScript = null;
 		}
-		DLFileEntry scriptSource = null;
+		
+		DDMTemplate ddmTemplate = null;
 
 		try {
 			if (cachedScript != null) {
@@ -54,14 +55,14 @@ public class ScriptCacheUtil implements Serializable {
 				}
 
 				if ( cachedScript.isExpireCheckRequired() ) {
-					scriptSource = DynamicScriptingUtil.getDLScriptSource(scopeGroupId, preference, scriptPath, tracePortletContext);
-
-					if ( scriptSource == null ) {
+					ddmTemplate = PortletDisplayTemplateUtil.fetchDDMTemplate(scopeGroupId,
+							scriptKey);
+					if (ddmTemplate == null) {
 						scriptCache.put(cacheKey, NO_SCRIPT_DEFINED);
 						return null;
 					}
 
-					Date lastUpdateTime = scriptSource.getModifiedDate();
+					Date lastUpdateTime = ddmTemplate.getModifiedDate();
 					if ( cachedScript.isExpired(lastUpdateTime)) {
 						
 						// cached script has expired, cleanup the cache
@@ -80,36 +81,19 @@ public class ScriptCacheUtil implements Serializable {
 			cachedScript = NO_SCRIPT_DEFINED;
 			
 			// avoid load script source twice
-			if ( scriptSource == null ) {
-				scriptSource = DynamicScriptingUtil.getDLScriptSource(scopeGroupId, preference, scriptPath, tracePortletContext);
+			if ( ddmTemplate == null ) {
+				ddmTemplate = PortletDisplayTemplateUtil.fetchDDMTemplate(scopeGroupId,
+						scriptKey);
 			}
 
-			if ( scriptSource != null ) {
-				
-				// load script from script source
-				InputStream stream = DynamicScriptingUtil.getDLScriptStream(scriptSource);
-				try {
-					Reader reader = new InputStreamReader(stream, "UTF-8");
-					StringBuilder builder = new StringBuilder();
-					char[] buffer = new char[1024];
-					int size = 0;
-					while ( size >= 0 ) {
-						size = reader.read(buffer);
-						if ( size > 0 ) {
-							builder.append(buffer,0,size);
-						}
-					}
-					String script = builder.toString().trim();
-					if ( Validator.isNotNull(script)) {
-						// create cached script for cache
-						cachedScript = new CachedScript(scriptSource.getModifiedDate(), script);
-					}
-				} finally {
-					stream.close();
+			if ( ddmTemplate != null ) {
+				String script = ddmTemplate.getScript();
+				if ( Validator.isNotNull(script)) {
+					cachedScript = new CachedScript(ddmTemplate.getModifiedDate(), ddmTemplate.getScript());
 				}
 			}
 		} catch (Exception e) {
-			_log.error("Failed to load script, scriptName="+scriptPath+". Please re-configure the portlet "+tracePortletContext, e);
+			_log.error("Failed to load script, groupId="+scopeGroupId+", scriptKey="+scriptKey+". Please re-configure the portlet "+tracePortletContext, e);
 			cachedScript = NO_SCRIPT_DEFINED;
 		}
 		
@@ -129,13 +113,9 @@ public class ScriptCacheUtil implements Serializable {
 		scriptCache.remove(cacheKey);
 	}
 
-	public static String generateCacheKey(long plid, String portletId, String scriptPath) {
+	public static String generateCacheKey(long scriptGroupId, String scriptKey) {
 		StringBuilder temp = new StringBuilder().
-				append(plid).append('/').append(portletId);
-		if ( !scriptPath.startsWith("/")) {
-			temp.append('/');
-		}
-		temp.append(scriptPath);
+				append(scriptGroupId).append('/').append(scriptKey);
 		return temp.toString();
 	}
 }

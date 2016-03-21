@@ -21,9 +21,9 @@ public class ADTTemplateLoaderUtil {
 	private static Log _log = LogFactoryUtil.getLog(ADTTemplateLoaderUtil.class);
 
 	private static final Pattern URI_PATTERN_DISPLAY_STYLE = Pattern.compile(
-			"^adt/displayStyle/([0-9]+)/(.+)\\.ftl$");
+			"^adt/displayStyle/([0-9]+)/(.+)\\.(ftl|groovy)$");
 	private static final Pattern URI_PATTERN_TEMPLATE_KEY = Pattern.compile(
-			"^adt/templateKey/([^/]+)/([0-9]+)/(.+)\\.ftl$");
+			"^adt/templateKey/([^/]+)/([0-9]+)/(.+)\\.(ftl|groovy)$");
 	
 	public static class TemplateSource {
 		private long templateId;
