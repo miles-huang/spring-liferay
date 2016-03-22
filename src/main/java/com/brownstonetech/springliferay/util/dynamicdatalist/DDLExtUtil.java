@@ -37,6 +37,7 @@ import com.liferay.portal.kernel.util.FastDateFormatFactoryUtil;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.LocaleUtil;
 import com.liferay.portal.kernel.util.StringPool;
+import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.kernel.workflow.WorkflowConstants;
 import com.liferay.portal.theme.ThemeDisplay;
@@ -53,7 +54,8 @@ import com.liferay.portlet.dynamicdatamapping.storage.StorageEngineUtil;
 
 public class DDLExtUtil extends DDLUtil {
 
-	private static final Map<String,DDLRecordMetaFieldInfo> RESERVED_COLUMNS = new LinkedHashMap<String,DDLRecordMetaFieldInfo>();
+	private static final DDLRecordMetaFieldInfo[] RESERVED_COLUMNS;
+	private static final Map<String,DDLRecordMetaFieldInfo> RESERVED_COLUMNS_MAP;
 	private static final Map<String,String> FIELD_DATA_TYPE_CLASSNAME;
 	private static Map<String, StructureRenderModelTypeHandler> handlers;
 	private static Log _log = LogFactoryUtil.getLog(DDLExtUtil.class);
@@ -74,37 +76,32 @@ public class DDLExtUtil extends DDLUtil {
 		STATUS_OPTIONS.put(String.valueOf(WorkflowConstants.STATUS_SCHEDULED), WorkflowConstants.LABEL_SCHEDULED);
 		STATUS_OPTIONS.put(String.valueOf(WorkflowConstants.STATUS_IN_TRASH), WorkflowConstants.LABEL_IN_TRASH);
 
-		RESERVED_COLUMNS.put("displayIndex",
-				new DDLRecordMetaFieldInfo("reservedDisplayIndex", "display-index", DDMFieldTypes.TYPE_INT_NUMBER, FieldConstants.INTEGER,
-						null));
-		RESERVED_COLUMNS.put("recordId",
-				new DDLRecordMetaFieldInfo("reservedRecordId","id", DDMFieldTypes.TYPE_INT_NUMBER, FieldConstants.LONG, 
-						com.liferay.portal.kernel.search.Field.ENTRY_CLASS_PK));
-		RESERVED_COLUMNS.put("createUserId",
-				new DDLRecordMetaFieldInfo("reservedCreateUserId","author", DDMFieldTypes.TYPE_INT_NUMBER, FieldConstants.LONG, 
-						com.liferay.portal.kernel.search.Field.USER_ID));
-		RESERVED_COLUMNS.put("createUserName",
-				new DDLRecordMetaFieldInfo("reservedCreateUserName","author", DDMFieldTypes.TYPE_TEXT, FieldConstants.STRING,
-						com.liferay.portal.kernel.search.Field.USER_NAME));
-		RESERVED_COLUMNS.put("createDate",
-				new DDLRecordMetaFieldInfo("reservedCreateDate","create-date", DDMFieldTypes.TYPE_DDM_DATE, FieldConstants.DATE,
-						com.liferay.portal.kernel.search.Field.CREATE_DATE));
-		RESERVED_COLUMNS.put("modifiedUserId",
-				new DDLRecordMetaFieldInfo("reservedModifiedUserId","last-changed-by", DDMFieldTypes.TYPE_INT_NUMBER, FieldConstants.LONG,
-						null));
-		RESERVED_COLUMNS.put("modifiedUserName",
-				new DDLRecordMetaFieldInfo("reservedModifiedUserName","last-changed-by", DDMFieldTypes.TYPE_TEXT, FieldConstants.STRING,
-						null));
-		RESERVED_COLUMNS.put("modifiedDate",
-				new DDLRecordMetaFieldInfo("reservedModifiedDate","modified-date", DDMFieldTypes.TYPE_DDM_DATE, FieldConstants.DATE,
-						com.liferay.portal.kernel.search.Field.MODIFIED_DATE));
-		RESERVED_COLUMNS.put("status",
-				new DDLRecordMetaFieldInfo("reservedStatus","status", DDMFieldTypes.TYPE_INT_NUMBER, FieldConstants.INTEGER, 
-						com.liferay.portal.kernel.search.Field.STATUS,STATUS_OPTIONS));
-		RESERVED_COLUMNS.put("uuid",
-				new DDLRecordMetaFieldInfo("reservedUuid","uuid", DDMFieldTypes.TYPE_TEXT, FieldConstants.STRING,
-						null));
+		RESERVED_COLUMNS = new DDLRecordMetaFieldInfo[] {
+				new DDLRecordMetaFieldInfo("displayIndex", "display-index", DDMFieldTypes.TYPE_INT_NUMBER, FieldConstants.INTEGER,null),
+				new DDLRecordMetaFieldInfo("recordId","id", DDMFieldTypes.TYPE_INT_NUMBER, FieldConstants.LONG, 
+						com.liferay.portal.kernel.search.Field.ENTRY_CLASS_PK),
+				new DDLRecordMetaFieldInfo("createUserId","author", DDMFieldTypes.TYPE_INT_NUMBER, FieldConstants.LONG, 
+						com.liferay.portal.kernel.search.Field.USER_ID),
+				new DDLRecordMetaFieldInfo("createUserName","author", DDMFieldTypes.TYPE_TEXT, FieldConstants.STRING,
+						com.liferay.portal.kernel.search.Field.USER_NAME),
+				new DDLRecordMetaFieldInfo("createDate","create-date", DDMFieldTypes.TYPE_DDM_DATE, FieldConstants.DATE,
+						com.liferay.portal.kernel.search.Field.CREATE_DATE),
+				new DDLRecordMetaFieldInfo("modifiedUserId","last-changed-by", DDMFieldTypes.TYPE_INT_NUMBER, FieldConstants.LONG,
+						null),
+				new DDLRecordMetaFieldInfo("modifiedUserName","last-changed-by", DDMFieldTypes.TYPE_TEXT, FieldConstants.STRING,
+						null),
+				new DDLRecordMetaFieldInfo("modifiedDate","modified-date", DDMFieldTypes.TYPE_DDM_DATE, FieldConstants.DATE,
+						com.liferay.portal.kernel.search.Field.MODIFIED_DATE),
+				new DDLRecordMetaFieldInfo("status","status", DDMFieldTypes.TYPE_INT_NUMBER, FieldConstants.INTEGER, 
+						com.liferay.portal.kernel.search.Field.STATUS,STATUS_OPTIONS),
+				new DDLRecordMetaFieldInfo("uuid","uuid", DDMFieldTypes.TYPE_TEXT, FieldConstants.STRING,
+						null)
+		};
 		
+		RESERVED_COLUMNS_MAP = new LinkedHashMap<String,DDLRecordMetaFieldInfo>();
+		for (DDLRecordMetaFieldInfo fieldInfo: RESERVED_COLUMNS) {
+			RESERVED_COLUMNS_MAP.put(fieldInfo.getModelFieldName(), fieldInfo);
+		}
 
 		FIELD_DATA_TYPE_CLASSNAME = new HashMap<String,String>();
 		FIELD_DATA_TYPE_CLASSNAME.put(FieldConstants.BOOLEAN, Boolean.class.getName());
@@ -124,7 +121,8 @@ public class DDLExtUtil extends DDLUtil {
 		registerHandler(DDMFieldTypes.TYPE_RADIO, selectHandler);
 	}
 	
-	private static class DDLRecordMetaFieldInfo {
+	public static class DDLRecordMetaFieldInfo {
+		private String fieldName;
 		private String modelFieldName;
 		private String resourceKey;
 		private String fieldDataType;
@@ -132,23 +130,44 @@ public class DDLExtUtil extends DDLUtil {
 		private String indexFieldName;
 		private Map<String,String> options;
 		
-		public DDLRecordMetaFieldInfo(String modelFieldName,
+		public DDLRecordMetaFieldInfo(String fieldName, 
 				String resourceKey, String type, String fieldDataType, String indexFieldName ) {
-			this.modelFieldName = modelFieldName;
+			this.fieldName = fieldName;
+			this.modelFieldName = "reserved"+StringUtil.upperCaseFirstLetter(fieldName);
 			this.resourceKey = resourceKey;
 			this.fieldDataType = fieldDataType;
 			this.indexFieldName = indexFieldName;
 			this.type = type;
 		}
 		
-		public DDLRecordMetaFieldInfo(String modelFieldName,
+		public DDLRecordMetaFieldInfo(String fieldName, 
 				String resourceKey, String type, String fieldDataType, String indexFieldName, Map<String,String> options) {
-			this(modelFieldName, resourceKey, type, fieldDataType, indexFieldName);
+			this(fieldName, resourceKey, type, fieldDataType, indexFieldName);
 			this.options = options;
 		}
-		
+
+		/**
+		 * Column name defined in DDLRecord entity
+		 * @return
+		 */
+		public String getFieldName() {
+			return fieldName;
+		}
+
+		/**
+		 * Model field name used is rendering template. It's fieldName add "reserved" prefix
+		 * @return
+		 */
 		public String getModelFieldName() {
 			return modelFieldName;
+		}
+		
+		/**
+		 * Field name used by search engine indexing the DDLRecord field
+		 * @return
+		 */
+		public String getIndexFieldName() {
+			return indexFieldName;
 		}
 
 		public String getResourceKey() {
@@ -157,10 +176,6 @@ public class DDLExtUtil extends DDLUtil {
 
 		public String getFieldDataType() {
 			return fieldDataType;
-		}
-
-		public String getIndexFieldName() {
-			return indexFieldName;
 		}
 
 		public String getType() {
@@ -473,20 +488,19 @@ public class DDLExtUtil extends DDLUtil {
 	
 	private static void addReservedColumns(Map<String,Map<String,Serializable>> columns, String languageId) {
 		Locale locale = LocaleUtil.fromLanguageId(languageId);
-		for ( String key: RESERVED_COLUMNS.keySet() ) {
-			DDLRecordMetaFieldInfo temp = RESERVED_COLUMNS.get(key);
+		for ( DDLRecordMetaFieldInfo temp: RESERVED_COLUMNS ) {
 			String fieldName = temp.getModelFieldName();
 			Map<String, Serializable> columnModel = new LinkedHashMap<String, Serializable>();
-			columnModel.put(FieldConstants.NAME, key);
+			columnModel.put(FieldConstants.NAME, fieldName);
 			columnModel.put(FieldConstants.LABEL, LanguageUtil.get(locale, temp.getResourceKey()));
 			columnModel.put(FieldConstants.TYPE, temp.getType());
 			columnModel.put(FieldConstants.DATA_TYPE, temp.getFieldDataType());
 			Map<String, String> options = temp.getOptions();
 			if ( options != null ) {
 				LinkedHashMap<String,String> localized = new LinkedHashMap<String,String>(options.size());
-				for ( Map.Entry<String,String> entry: options.entrySet()) {
-					String localizedLabel = LanguageUtil.get(locale, entry.getValue());
-					localized.put(entry.getKey(), localizedLabel);
+				for ( Map.Entry<String,String> optionEntry: options.entrySet()) {
+					String localizedLabel = LanguageUtil.get(locale, optionEntry.getValue());
+					localized.put(optionEntry.getKey(), localizedLabel);
 				}
 				columnModel.put(STRUCTURE_FIELD_OPTIONS, localized);
 			}
@@ -494,36 +508,72 @@ public class DDLExtUtil extends DDLUtil {
 		}
 	}
 	
-	public static String getRecordMetaFieldDataType(String fieldName) {
-		DDLRecordMetaFieldInfo info = RESERVED_COLUMNS.get(fieldName);
-		if ( info == null ) return null;
-		String className = FIELD_DATA_TYPE_CLASSNAME.get(info.getFieldDataType());
-		if ( className == null ) {
-			return String.class.getName();
-		}
-		return className;
-	}
+//	public static String getRecordMetaFieldDataType(String fieldName) {
+//		DDLRecordMetaFieldInfo info = RESERVED_COLUMNS.get(fieldName);
+//		if ( info == null ) return null;
+//		String className = FIELD_DATA_TYPE_CLASSNAME.get(info.getFieldDataType());
+//		if ( className == null ) {
+//			return String.class.getName();
+//		}
+//		return className;
+//	}
+//
+//	public static String getRecordMetaFieldIndexName(String fieldName) {
+//		DDLRecordMetaFieldInfo info = RESERVED_COLUMNS.get(fieldName);
+//		if ( info == null ) return null;
+//		return info.getIndexFieldName();
+//	}
 
-	public static String getRecordMetaFieldIndexName(String fieldName) {
-		DDLRecordMetaFieldInfo info = RESERVED_COLUMNS.get(fieldName);
-		if ( info == null ) return null;
-		return info.getIndexFieldName();
-	}
-		
-	public static String getRecordFieldClassName(DDLRecordSet recordSet, String fieldName)
+	/**
+	 * Get the java class name as string of the type matching with
+	 * the specified field.
+	 * <p>This method also handles reserved field anmes for DDLRecord
+	 * </p>
+	 * 
+	 * @param recordSet
+	 * @param fieldName
+	 * @return
+	 * @throws PortalException
+	 * @throws SystemException
+	 */
+	public static String getFieldClassName(DDLRecordSet recordSet, String fieldName)
 			throws PortalException, SystemException {
-		DDMStructure structure = recordSet.getDDMStructure();
-		String fieldDataType = structure.getFieldDataType(fieldName);
+		String fieldDataType;
+		if ( RESERVED_COLUMNS_MAP.containsKey(fieldName)) {
+			// this is a reserved field, get answer from RESERVED_COLUMNS
+			DDLRecordMetaFieldInfo info = RESERVED_COLUMNS_MAP.get(fieldName);
+			fieldDataType = info.getFieldDataType();
+		} else {
+			DDMStructure structure = recordSet.getDDMStructure();
+			fieldDataType = structure.getFieldDataType(fieldName);
+		}
 		String className = FIELD_DATA_TYPE_CLASSNAME.get(fieldDataType);
 		if ( className == null ) {
 			return String.class.getName();
 		}
 		return className;
 	}
-	
-	public static String getRecordFieldIndexName(DDMStructure structure, String fieldName, Locale locale, boolean ignoreCase)
+
+	/**
+	 * Get the specified field's index field name used by search engine index.
+	 * This method also handles reserved field names for DDLRecord 
+	 * 
+	 * @param structure
+	 * @param fieldName
+	 * @param locale
+	 * @param ignoreCase
+	 * @return
+	 * @throws PortalException
+	 * @throws SystemException
+	 */
+	public static String getFieldIndexName(DDMStructure structure, String fieldName, Locale locale, boolean ignoreCase)
 			throws PortalException, SystemException {
 		long structureId = structure.getStructureId();
+		if ( RESERVED_COLUMNS_MAP.containsKey(fieldName)) {
+			// this is a reserved field, get answer from RESERVED_COLUMNS
+			DDLRecordMetaFieldInfo info = RESERVED_COLUMNS_MAP.get(fieldName);
+			return info.getIndexFieldName();
+		}
 		return DDMKeywordIndexerUtil.encodeName(structureId, fieldName, locale, ignoreCase);
 	}
 
