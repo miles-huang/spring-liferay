@@ -12,8 +12,8 @@ import com.liferay.portal.kernel.util.LocaleUtil;
 import com.liferay.portlet.dynamicdatamapping.model.DDMStructure;
 import com.liferay.portlet.dynamicdatamapping.storage.FieldConstants;
 
-public class SelectHandler implements StructureRenderModelTypeHandler {
-	private static Log _log = LogFactoryUtil.getLog(SelectHandler.class);
+public class SelectRadioHandler implements StructureRenderModelTypeHandler {
+	private static Log _log = LogFactoryUtil.getLog(SelectRadioHandler.class);
 
 	@Override
 	public void handle(Map<String, Serializable> structureFieldModel, 
