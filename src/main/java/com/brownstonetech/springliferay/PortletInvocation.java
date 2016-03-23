@@ -6,6 +6,7 @@ import java.util.Locale;
 import java.util.TimeZone;
 
 import javax.portlet.PortletConfig;
+import javax.portlet.PortletMode;
 import javax.portlet.PortletRequest;
 import javax.portlet.PortletResponse;
 import javax.portlet.WindowState;
@@ -99,7 +100,8 @@ public class PortletInvocation implements Serializable {
 	}
 
 	public String getPortletId() {
-		return getThemeDisplay().getPortletDisplay().getId();
+		String portletId = getThemeDisplay().getPpid();
+		return portletId;
 	}
 	
 	public String getRootPortletId() {
@@ -222,6 +224,12 @@ public class PortletInvocation implements Serializable {
 				portletRequest,
 				getPortletId(), getPlid(), 
 				PortletRequest.RENDER_PHASE);
+		try {
+			url.setWindowState(portletRequest.getWindowState());
+			url.setPortletMode(portletRequest.getPortletMode());
+		} catch (Exception e) {
+			_log.error(e,e);
+		}
 		return url;
 	}
 	
