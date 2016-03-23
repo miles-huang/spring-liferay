@@ -418,13 +418,13 @@ public class DDLExtUtil extends DDLUtil {
 			= new LinkedHashMap<String, Map<String,Serializable>>(fieldsMap.size());
 		for ( String fieldName : fieldsMap.keySet()) {
 			Map<String, String> fieldMap = fieldsMap.get(fieldName);
-			Map<String, Serializable> structureFieldModel = new HashMap<String, Serializable>(fieldMap);
-			ret.put(fieldName, structureFieldModel);
 			if ( !includePrivate ) {
 				if (GetterUtil.getBoolean(fieldMap.get(FieldConstants.PRIVATE))) {
 					continue;
 				}
 			}
+			Map<String, Serializable> structureFieldModel = new HashMap<String, Serializable>(fieldMap);
+			ret.put(fieldName, structureFieldModel);
 			String type = fieldMap.get(FieldConstants.TYPE);
 			StructureRenderModelTypeHandler handler = handlers.get(type);
 			if ( handler != null ) {
