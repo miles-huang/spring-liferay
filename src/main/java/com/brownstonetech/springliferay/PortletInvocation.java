@@ -6,7 +6,6 @@ import java.util.Locale;
 import java.util.TimeZone;
 
 import javax.portlet.PortletConfig;
-import javax.portlet.PortletMode;
 import javax.portlet.PortletRequest;
 import javax.portlet.PortletResponse;
 import javax.portlet.WindowState;
