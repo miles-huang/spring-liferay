@@ -56,7 +56,6 @@ manage application to create/edit existing templates" %>
 <%@ taglib uri="http://liferay.com/tld/theme" prefix="liferay-theme" %>
 <%@ taglib uri="http://liferay.com/tld/ui" prefix="liferay-ui" %>
 <%@ taglib uri="http://liferay.com/tld/util" prefix="liferay-util" %>
-<%@ taglib uri="http://www.springframework.org/tags" prefix="spring" %>
 
 <%@ tag import="com.liferay.counter.service.CounterLocalServiceUtil" %><%@
 tag import="com.liferay.portal.LocaleException" %><%@

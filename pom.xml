@@ -14,8 +14,8 @@
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<jdk.version>1.6</jdk.version>
 		<junit.version>4.11</junit.version>
-		<liferay.version>6.2.3</liferay.version>
-		<liferay.maven.plugin.version>6.2.3</liferay.maven.plugin.version>
+		<liferay.version>6.2.5</liferay.version>
+		<liferay.maven.plugin.version>6.2.5</liferay.maven.plugin.version>
 		<spring.version>3.0.7.RELEASE</spring.version>
 	</properties>
 
@@ -108,6 +108,12 @@
 							<shortName>slu</shortName>
 							<uri>http://brownstonetech.com/liferay/slu</uri>
 							<tagdir>src/main/resources/META-INF/tags/slu</tagdir>
+						</taglib>
+						<taglib>
+							<description>Spring MVC Liferay Support Utility</description>
+							<shortName>test</shortName>
+							<uri>http://brownstonetech.com/liferay/test</uri>
+							<tagdir>src/main/resources/META-INF/tags/test</tagdir>
 						</taglib>
 					</taglibs>
 				</configuration>
