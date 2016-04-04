@@ -9,7 +9,7 @@ package com.brownstonetech.springliferay;
  */
 public class SpringLiferayWebKeys {
 	
-	public static final String ERROR = "controller";
+//	public static final String ERROR = "controller";
 
 	public static final String SEARCH_CONTAINER = "searchContainer";
 	public static final String SEARCH_TERMS = "searchTerms";
@@ -18,5 +18,7 @@ public class SpringLiferayWebKeys {
 	public static final String PORTLET_INVOCATION = "portletInvocation";
 	public static final String PORTLET_NS = "portletNS";
 	public static final String TEMPLATE_NS = "tplNS";
+	
+	public static final String SERVLET_ATTR_CACHED_PORTLET_SETTING = "LSPR-CACHED-PORTLET-SETTINGS";
 	
 }

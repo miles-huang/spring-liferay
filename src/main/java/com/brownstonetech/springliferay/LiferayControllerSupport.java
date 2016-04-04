@@ -28,7 +28,7 @@ import com.liferay.portal.theme.ThemeDisplay;
  */
 public class LiferayControllerSupport implements PortletConfigAware {
 	
-	private static final String ERROR = "ERROR";
+//	private static final String ERROR = "ERROR";
 	private PortletConfig portletConfig;
 	
 	@Override
@@ -42,14 +42,14 @@ public class LiferayControllerSupport implements PortletConfigAware {
 		return "error_page";
 	}
 	
-	/**
-	 * This always existing modelAttribute is for binding global error messages.
-	 * @return
-	 */
-	@ModelAttribute(SpringLiferayWebKeys.ERROR)
-	public Object getError() {
-		return ERROR;
-	}
+//	/**
+//	 * This always existing modelAttribute is for binding global error messages.
+//	 * @return
+//	 */
+//	@ModelAttribute(SpringLiferayWebKeys.ERROR)
+//	public Object getError() {
+//		return ERROR;
+//	}
 
 	@ModelAttribute(SpringLiferayWebKeys.THEME_DISPLAY)
 	public ThemeDisplay themeDisplay(PortletRequest request) {
@@ -75,11 +75,11 @@ public class LiferayControllerSupport implements PortletConfigAware {
 				portletRequest, portletResponse);
 	}
 	
-	@ModelAttribute(SpringLiferayWebKeys.TEMPLATE_NS)
-	public String tplNS() {
-		// TODO Miles implement or remove
-		return "";
-	}
+//	@ModelAttribute(SpringLiferayWebKeys.TEMPLATE_NS)
+//	public String tplNS() {
+//		// TODO Miles implement or remove
+//		return "";
+//	}
 	
 	@ModelAttribute(SpringLiferayWebKeys.PORTLET_NS)
 	public String portletNS(PortletResponse portletResponse) {

@@ -12,6 +12,7 @@ import javax.portlet.PortletResponse;
 import com.brownstonetech.springliferay.PortalExtUtil;
 import com.brownstonetech.springliferay.PortletInvocation;
 import com.brownstonetech.springliferay.exception.ErrorMessageException;
+import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.exception.SystemException;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.scripting.ScriptingException;
@@ -53,7 +54,7 @@ public class DynamicScriptingUtil {
 	public static void runExtensionScript(long scriptGroupId, String scriptKey, PortletInvocation portletInvocation, 
 			final Map<String,Object> additionalVariables, final Map<String, Object> modelMap,
 			final Log logger)
-			throws ErrorMessageException, SystemException {
+			throws PortalException, SystemException {
 		runScript(portletInvocation,
 					scriptGroupId, scriptKey, new ScriptHandler() {
 
@@ -74,7 +75,7 @@ public class DynamicScriptingUtil {
 	
 	public static void runScript(PortletInvocation portletInvocation,
 			long scriptGroupId, String scriptKey, ScriptHandler handler)
-					throws ErrorMessageException, SystemException {
+					throws PortalException, SystemException {
 		try {
 			PortletRequest portletRequest = portletInvocation.getPortletRequest();
 			PortletResponse portletResponse = portletInvocation.getPortletResponse();
@@ -98,8 +99,12 @@ public class DynamicScriptingUtil {
 			}
 		} catch (ScriptingException e) {
 			Throwable cause = e.getCause();
-			if ( cause instanceof ErrorMessageException ) {
-				ErrorMessageException msg = (ErrorMessageException) cause;
+			if ( cause instanceof PortalException ) {
+				PortalException msg = (PortalException) cause;
+				throw msg;
+			}
+			if ( cause instanceof SystemException ) {
+				SystemException msg = (SystemException) cause;
 				throw msg;
 			}
 			throw new SystemException("Unexpected ScriptingException while running script: scriptGroupId="+scriptGroupId+", scriptKey="+scriptKey, e);
