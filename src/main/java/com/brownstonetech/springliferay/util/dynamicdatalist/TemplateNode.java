@@ -67,7 +67,9 @@ public class TemplateNode extends com.liferay.portal.kernel.templateparser.Templ
 		this.setDataType(dataType);
 		this.setLabel(label);
 		this.setValue(value);
-		postProcess(ddmStructure, this, themeDisplay);
+		if ( ddmStructure != null ) {
+			postProcess(ddmStructure, this, themeDisplay);
+		}
 	}
 
 	private void setValue(Serializable value) {
