@@ -5,6 +5,7 @@ import java.util.Map;
 
 import javax.portlet.MimeResponse;
 import javax.portlet.PortletRequest;
+import javax.portlet.PortletResponse;
 import javax.portlet.PortletURL;
 
 import org.springframework.ui.ModelMap;
@@ -20,6 +21,8 @@ import com.liferay.portal.kernel.dao.search.DisplayTerms;
 import com.liferay.portal.kernel.dao.search.SearchContainer;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
+import com.liferay.portal.kernel.portlet.LiferayPortletRequest;
+import com.liferay.portal.kernel.portlet.LiferayPortletResponse;
 import com.liferay.portal.kernel.servlet.SessionErrors;
 import com.liferay.portal.theme.ThemeDisplay;
 import com.liferay.portlet.PortletURLUtil;
@@ -76,6 +79,17 @@ public abstract class LiferaySearchControllerSupport<E, S extends DisplayTerms> 
 	@ModelAttribute(SpringLiferayWebKeys.SEARCH_TERMS)
 	public DisplayTerms getSearchTerms(PortletRequest portletRequest) {
 		return createSearchTerms(portletRequest);
+	}
+	
+	@ModelAttribute(SpringLiferayWebKeys.CURRENT_URL)
+	@Override
+	public String currentURL(PortletRequest portletRequest, PortletResponse portletResponse) {
+		LiferayPortletRequest liferayPortletRequest = (LiferayPortletRequest)portletRequest;
+		LiferayPortletResponse liferayPortletResponse = (LiferayPortletResponse)portletResponse;
+		PortletURL currentURLObj = PortletURLUtil.getCurrent(liferayPortletRequest, liferayPortletResponse);
+
+		String currentURL = currentURLObj.toString();
+		return currentURL;
 	}
 	
 	/**

@@ -11,6 +11,7 @@ import org.springframework.web.portlet.context.PortletConfigAware;
 import com.liferay.portal.kernel.exception.SystemException;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
+import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.security.permission.PermissionChecker;
 import com.liferay.portal.theme.ThemeDisplay;
 
@@ -85,7 +86,18 @@ public class LiferayControllerSupport implements PortletConfigAware {
 	public String portletNS(PortletResponse portletResponse) {
 		return portletResponse.getNamespace();
 	}
-	
+
+	@ModelAttribute(SpringLiferayWebKeys.CURRENT_URL)
+	public String currentURL(PortletRequest portletRequest, PortletResponse portletResponse) {
+		ThemeDisplay themeDisplay = PortalExtUtil.getThemeDisplay(portletRequest);
+		if ( themeDisplay != null ) {
+			String currentURL = themeDisplay.getURLCurrent();
+			return currentURL;
+		}
+		_log.warn("Can't resolve themeDisplay from portlet Request");
+		return StringPool.BLANK;
+	}
+
 		
 	private static Log _log = LogFactoryUtil.getLog(LiferayControllerSupport.class);
 
