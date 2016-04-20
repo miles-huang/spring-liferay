@@ -56,10 +56,17 @@ public abstract class LiferaySearchControllerSupport<E, S extends DisplayTerms> 
 
 		try {
 			@SuppressWarnings("unchecked")
+			S temp = (S)searchTerms;
+			prepare(temp, bindingResult, modelMap);
+			
+			@SuppressWarnings("unchecked")
 			S s = (S)searchTerms;
+
+			int delta = getDefaultDelta(modelMap);
+			boolean deltaConfigurable = isDeltaConfigurable(modelMap);
 			
 			SearchContainer<E> searchContainer
-				= createSearchContainer(portletRequest, mimeResponse, s);
+				= createSearchContainer(portletRequest, mimeResponse, s, delta, deltaConfigurable);
 			
 			mav.addObject(SpringLiferayWebKeys.SEARCH_CONTAINER, searchContainer);
 			
@@ -107,7 +114,7 @@ public abstract class LiferaySearchControllerSupport<E, S extends DisplayTerms> 
 	 * @return
 	 */
 	protected SearchContainer<E> createSearchContainer(PortletRequest portletRequest, MimeResponse mimeResponse,
-			S searchTerms) {
+			S searchTerms, int defaultDelta, boolean deltaConfigurable ) {
 		PortletURL currentURLObj = PortletURLUtil.getCurrent(portletRequest, mimeResponse);
 		Map<String, String[]> params = currentURLObj.getParameterMap();
 		Iterator<Map.Entry<String,String[]>> iter = params.entrySet().iterator();
@@ -125,10 +132,20 @@ public abstract class LiferaySearchControllerSupport<E, S extends DisplayTerms> 
 		currentURLObj.setParameters(params);
 		
 		GenericSearchContainer<E, S> searchContainer
-			= new GenericSearchContainer<E, S>(portletRequest, currentURLObj, searchTerms);
+			= new GenericSearchContainer<E, S>(portletRequest, currentURLObj, searchTerms, defaultDelta);
+		searchContainer.setDeltaConfigurable(deltaConfigurable);
+		
 		return searchContainer;
 	}
 
+	protected boolean isDeltaConfigurable(Map<String,Object> model) {
+		return true;
+	}
+	
+	protected int getDefaultDelta(Map<String,Object> model) {
+		return SearchContainer.DEFAULT_DELTA;
+	}
+	
 	/**
 	 * Generate instance of user defined searchTerm bean.
 	 * 
@@ -197,4 +214,15 @@ public abstract class LiferaySearchControllerSupport<E, S extends DisplayTerms> 
 	 * @return view location 
 	 */
 	protected abstract String getListView();
+
+	/**
+	 * Subclass override this method to do initializations before render
+	 * @param portletInvocation
+	 * @param command
+	 * @param bindingResult
+	 * @param modelMap
+	 */
+	protected void prepare(S command, BindingResult bindingResult,
+			Map<String, Object> modelMap) {
+	}
 }

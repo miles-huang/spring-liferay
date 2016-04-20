@@ -38,16 +38,16 @@ public class GenericSearchContainer<E,S extends DisplayTerms> extends SearchCont
 		baseProperties.add("metaClass");
 	}
 	
-	public GenericSearchContainer(PortletRequest portletRequest, PortletURL iteratorURL, S searchTerm) {
-		this(portletRequest, DEFAULT_CUR_PARAM, searchTerm, iteratorURL);
+	public GenericSearchContainer(PortletRequest portletRequest, PortletURL iteratorURL, S searchTerm, int defaultDelta) {
+		this(portletRequest, DEFAULT_CUR_PARAM, searchTerm, iteratorURL, defaultDelta);
 	}
 
 	public GenericSearchContainer(
 			PortletRequest portletRequest, String curParam, S searchTerm,
-			PortletURL iteratorURL) {
+			PortletURL iteratorURL, int defaultDelta) {
 		super(
 				portletRequest, searchTerm,
-				searchTerm, curParam, DEFAULT_DELTA,
+				searchTerm, curParam, defaultDelta,
 				iteratorURL, null, null);
 
 		BeanWrapper beanWrapper = new BeanWrapperImpl(searchTerm);
