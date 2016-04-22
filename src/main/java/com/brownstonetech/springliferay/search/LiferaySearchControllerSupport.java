@@ -56,12 +56,10 @@ public abstract class LiferaySearchControllerSupport<E, S extends DisplayTerms> 
 
 		try {
 			@SuppressWarnings("unchecked")
-			S temp = (S)searchTerms;
-			prepare(temp, bindingResult, modelMap);
-			
-			@SuppressWarnings("unchecked")
 			S s = (S)searchTerms;
 
+			prepare(s, bindingResult, modelMap);
+			
 			int delta = getDefaultDelta(modelMap);
 			boolean deltaConfigurable = isDeltaConfigurable(modelMap);
 			
