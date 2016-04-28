@@ -97,8 +97,9 @@
 <%@ attribute name="formType" required="true" rtexprvalue="true" type="java.lang.String" 
 	description="Provides options as a Map, each elemement will be rendered as a option in the select html control, map keys are interpreted as option values and the map values correspond to option labels." %>
 
-<%@ include file="../init.tagf" %>
+<%@ include file="/META-INF/tags/init.tagf" %>
 <%@ taglib uri="http://liferay.com/tld/aui" prefix="aui" %>
+<%@ taglib uri="http://www.springframework.org/tags" prefix="spring" %>
 <%@ tag import="com.liferay.portal.kernel.json.JSONFactoryUtil" %>
 
 <spring:bind path="${name}">

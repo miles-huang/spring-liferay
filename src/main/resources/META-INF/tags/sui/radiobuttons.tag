@@ -89,8 +89,9 @@
 <%@ attribute name="wrapperCssClass" required="false" rtexprvalue="true" type="java.lang.String" 
 	description="Sets a CSS class for styling the &lt;code&gt;div&lt;/code&gt; that wraps the input component." %>
 	
-<%@ include file="../init.tagf" %>
+<%@ include file="/META-INF/tags/init.tagf" %>
 <%@ taglib uri="http://liferay.com/tld/aui" prefix="aui" %>
+<%@ taglib uri="http://www.springframework.org/tags" prefix="spring" %>
 
 <spring:bind path="${name}">
 	<aui:field-wrapper 

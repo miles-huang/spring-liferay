@@ -3,6 +3,8 @@
 <%@ tag dynamic-attributes="dynamicAttrMap" %>
 
 <%@ attribute name="bean" required="false" rtexprvalue="true" type="java.lang.Object" description="Sets the bean associated with the select component." %>
+<%@ attribute name="noBinding" required="false" rtexprvalue="true" type="Boolean" description="Don't binding to an spring form property. The default value is &lt;code&gt;false&lt;/code&gt;." %>
+<%@ attribute name="value" required="false" rtexprvalue="true" type="String" description="value" %>
 <%@ attribute name="changesContext" required="false" rtexprvalue="true" type="Boolean" description="Sets whether to reload the page when the value of the field changes. The default value is &lt;code&gt;false&lt;/code&gt;." %>
 <%@ attribute name="cssClass" required="false" rtexprvalue="true" type="java.lang.String" description="Sets a CSS class for styling this component." %>
 <%@ attribute name="data" required="false" rtexprvalue="true" type="java.util.Map" 
@@ -51,17 +53,35 @@
 	description="Sets the select field's title." %>
 <%@ attribute name="useNamespace" required="false" rtexprvalue="true" type="Boolean" 
 	description="Sets whether to use the default portlet namespace, to avoid name conflicts. The default value is &lt;code&gt;true&lt;/code&gt;." %>
-<%@ attribute name="items" required="false" rtexprvalue="true" type="java.util.Map" 
+<%@ attribute name="options" required="false" rtexprvalue="true" type="java.util.Map" 
 	description="Provides options as a Map, each elemement will be rendered as a option in the select html control, map keys are interpreted as option values and the map values correspond to option labels." %>
 
-<%@ include file="../init.tagf" %>
+<%@ include file="/META-INF/tags/init.tagf" %>
 <%@ taglib uri="http://liferay.com/tld/aui" prefix="aui" %>
+<%@ taglib uri="http://www.springframework.org/tags" prefix="spring" %>
 
+<%
+String paramName = name;
+noBinding = noBinding==null?false:noBinding;
+if ( !noBinding) {
+%>
 <spring:bind path="<%= name %>">
+<%
+cssClass = (status.isError()?"error-field ":"") + cssClass;
+paramName = status.getExpression();
+if (value == null) {
+	value = status.getDisplayValue();
+}
+%>
+<c:set var="value" value="<%= value %>" />
+</spring:bind>
+<%
+}
+%>
 	<aui:select
 		bean="<%= bean %>"
 		changesContext="<%= changesContext==null?false:changesContext %>"
-		cssClass="${status.error?'error-field':''} ${cssClass}"
+		cssClass="<%= cssClass %>"
 		data="<%= data %>"
 		disabled="<%= disabled == null?false:disabled %>"
 		first="<%= first==null?false:first %>"
@@ -75,7 +95,7 @@
 		listType="<%= listType %>"
 		listTypeFieldName="<%= listTypeFieldName %>"
 		multiple="<%= multiple == null? false: multiple %>"
-		name="${status.expression}"
+		name="<%= paramName %>"
  		onChange="<%= onChange %>"
 		onClick="<%= onClick %>"
 		prefix="<%= prefix %>"
@@ -86,11 +106,10 @@
 		title="<%= title %>"
 		useNamespace="<%= useNamespace ==null?true:useNamespace %>"
 	>
-		<c:if test="<%= items != null %>">
-			<c:forEach var="item" begin="0" items="${items}">
-				<aui:option selected="${status.value == item.key}" value="${item.key}">${item.value}</aui:option>
+		<c:if test="<%= options != null %>">
+			<c:forEach var="item" begin="0" items="${options}">
+				<aui:option selected="${value == item.key}" value="${item.key}">${item.value}</aui:option>
 			</c:forEach>
 		</c:if>
 		<jsp:doBody />
 </aui:select>
-</spring:bind>

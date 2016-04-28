@@ -1,7 +1,7 @@
 <%@ tag pageEncoding="UTF-8" %>
 <%@ tag description="Display all errors contained in SessionErrors. Using error key as resource bundle key." %>
 
-<%@ include file="../init.tagf" %>
+<%@ include file="/META-INF/tags/init.tagf" %>
 <%@ taglib uri="http://liferay.com/tld/ui" prefix="liferay-ui" %>
 
 <portlet:defineObjects/>
