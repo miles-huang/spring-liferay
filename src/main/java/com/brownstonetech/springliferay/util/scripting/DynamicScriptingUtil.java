@@ -93,8 +93,9 @@ public class DynamicScriptingUtil {
 				handler.populateAdditionalScriptContext(scriptContext);
 				Map<String, Object> ret = ScriptingUtil.eval(null, scriptContext,
 						handler.getOutputVariables(), "groovy", cachedScript.getScript(),
-						ClassLoaderPool.getContextName(PortalClassLoaderUtil.getClassLoader()),
-						ClassLoaderPool.getContextName(Thread.currentThread().getContextClassLoader()));
+						ClassLoaderPool.getContextName(Thread.currentThread().getContextClassLoader()),
+						ClassLoaderPool.getContextName(PortalClassLoaderUtil.getClassLoader())
+						);
 				handler.handleScriptResult(ret);
 			}
 		} catch (ScriptingException e) {
