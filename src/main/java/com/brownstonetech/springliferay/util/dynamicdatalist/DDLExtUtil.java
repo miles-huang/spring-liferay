@@ -22,17 +22,32 @@ package com.brownstonetech.springliferay.util.dynamicdatalist;
 import java.io.Serializable;
 import java.math.BigDecimal;
 import java.text.Format;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 
+import com.brownstonetech.springliferay.exception.UnexpectedPortalException;
+import com.brownstonetech.springliferay.util.search.DDLSearchFormHelper;
+import com.brownstonetech.springliferay.util.search.TransferBooleanClause;
+import com.liferay.portal.kernel.dao.orm.QueryUtil;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.exception.SystemException;
+import com.liferay.portal.kernel.json.JSONFactoryUtil;
 import com.liferay.portal.kernel.language.LanguageUtil;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
+import com.liferay.portal.kernel.search.BooleanClause;
+import com.liferay.portal.kernel.search.BooleanClauseOccur;
+import com.liferay.portal.kernel.search.BooleanQuery;
+import com.liferay.portal.kernel.search.BooleanQueryFactoryUtil;
+import com.liferay.portal.kernel.search.Hits;
+import com.liferay.portal.kernel.search.ParseException;
+import com.liferay.portal.kernel.search.QueryConfig;
+import com.liferay.portal.kernel.search.SearchContext;
 import com.liferay.portal.kernel.util.FastDateFormatFactoryUtil;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.LocaleUtil;
@@ -40,11 +55,13 @@ import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.kernel.workflow.WorkflowConstants;
+import com.liferay.portal.service.ServiceContext;
 import com.liferay.portal.theme.ThemeDisplay;
 import com.liferay.portal.util.PortalUtil;
 import com.liferay.portlet.dynamicdatalists.model.DDLRecord;
 import com.liferay.portlet.dynamicdatalists.model.DDLRecordSet;
 import com.liferay.portlet.dynamicdatalists.model.DDLRecordVersion;
+import com.liferay.portlet.dynamicdatalists.service.DDLRecordLocalServiceUtil;
 import com.liferay.portlet.dynamicdatalists.util.DDLUtil;
 import com.liferay.portlet.dynamicdatamapping.model.DDMStructure;
 import com.liferay.portlet.dynamicdatamapping.storage.Field;
@@ -600,6 +617,171 @@ public class DDLExtUtil extends DDLUtil {
 		boolean localizable = GetterUtil.getBoolean(
 				ddmStructure.getFieldProperty(fieldName, "localizable"), true);
 		return localizable;
+	}
+
+	/**
+	 * Search the DDL record set and try to find out an unique DDL record
+	 * that matches with the criteria.
+	 * <p>
+	 * The search criteria should be logically unique. If multiple records
+	 * is found, a warning message will be written into application log and
+	 * only the first DDL record found is returned.
+	 * @param recordSet The DDL record set search against.
+	 * @param uniqueSearchCriteria See {@link #searchDDLRecordSet(DDLRecordSet, Map, boolean, int, int)}
+	 * @param approvedOnly true: Only return approved DDL record;
+	 *  false: return any records disregard the status of the record.
+	 * @return The DDL record found matches with the uniqueSearchCriteria,
+	 * or null if record not found.
+	 * @throws SystemException
+	 */
+	public static DDLRecord fetchDDLRecord(DDLRecordSet recordSet, Map<String,Object> uniqueSearchCriteria,
+			boolean approvedOnly) throws SystemException {
+		List<DDLRecord> results = searchDDLRecordSet(recordSet, uniqueSearchCriteria, approvedOnly, 1, 2);
+		if ( results.size() == 0 ) {
+			return null;
+		}
+		if ( results.size() > 1 ) {
+			String recordSetName = recordSet.getName(recordSet.getDefaultLanguageId(),true);
+			_log.warn("The search condition is not unique, recordSetId="+recordSet.getRecordSetId()
+				+"("+recordSetName+")"
+				+", search criteria: "+JSONFactoryUtil.looseSerializeDeep(uniqueSearchCriteria));
+		}
+		return results.get(0);
+	}
+	
+	public static List<DDLRecord> searchDDLRecordSet(DDLRecordSet recordSet, Map<String,Object> searchCriteria,
+			boolean approvedOnly) throws SystemException {
+		return searchDDLRecordSet(recordSet, searchCriteria, approvedOnly,
+				QueryUtil.ALL_POS, QueryUtil.ALL_POS);
+	}
+	
+	/**
+	 * Search the DDL record set using criteria.
+	 * 
+	 * @param recordSet The DDL record set search against.
+	 * @param searchCriteria
+	 * @param approvedOnly true: Only return approved DDL record;
+	 *  false: return any records disregard the status of the record.
+	 * @param start Start index for the pagination, index start from 0
+	 * @param end End index for the pagination, index start from 0 exclusive.
+	 * If any of the start or end parameter have value {@link QueryUtil.ALL_POS},
+	 * the pagination is disabled and all records will be returned.
+	 * @return List of DDL records found match with the searchCriteria.
+	 * @throws SystemException
+	 */
+	public static List<DDLRecord> searchDDLRecordSet(DDLRecordSet recordSet, Map<String,Object> searchCriteria,
+			boolean approvedOnly,
+			int start, int end) throws SystemException {
+		Locale locale = LocaleUtil.fromLanguageId(recordSet.getDefaultLanguageId());
+		SearchContext searchContext = prepareDDLSearchContext(recordSet.getUserId(), 
+				recordSet, locale, approvedOnly);
+		
+		DDMStructure structure;
+		try {
+			structure = recordSet.getDDMStructure();
+		} catch (PortalException e1) {
+			throw new UnexpectedPortalException(e1);
+		}
+		DDLSearchFormHelper helper = new DDLSearchFormHelper(
+				structure, locale, searchContext);
+
+		BooleanQuery additionalQuery = BooleanQueryFactoryUtil.create(searchContext);
+		try {
+			helper.combineFieldSearchTerms(additionalQuery, true, 
+					searchCriteria);
+		} catch (ParseException e1) {
+			String recordSetName = recordSet.getName(recordSet.getDefaultLanguageId(),true);
+			throw new SystemException("Search criteria parse failed, recordSetId="+recordSet.getRecordSetId()
+					+"("+recordSetName+"), search criteria: "+JSONFactoryUtil.looseSerializeDeep(searchCriteria), e1);
+		}
+		
+		searchContext.setBooleanClauses(new BooleanClause[]{
+			new TransferBooleanClause(additionalQuery, BooleanClauseOccur.MUST)
+		});
+		
+		searchContext.setStart(start);
+		searchContext.setEnd(end);
+		Hits hits = DDLRecordLocalServiceUtil.search(searchContext);
+		int total = hits.getLength();
+		if ( total > 0 ) {
+			try {
+				List<DDLRecord> results = DDLUtil.getRecords(hits);
+				return results;
+			} catch (Exception e) {
+				String recordSetName = recordSet.getName(recordSet.getDefaultLanguageId(),true);
+				throw new SystemException("Failed convert search hits to DDLRecord list, recordSetId="+recordSet.getRecordSetId()
+					+"("+recordSetName+")", e);
+			}
+		}
+		return Collections.emptyList();
+	}
+	
+	private static SearchContext prepareDDLSearchContext(long userId, DDLRecordSet recordSet,
+			Locale locale, boolean approvedOnly) {
+		SearchContext searchContext = new SearchContext();
+		searchContext.setCompanyId(recordSet.getCompanyId());
+		searchContext.setGroupIds(new long[]{recordSet.getGroupId()});
+//		searchContext.setLayout(layout);
+		searchContext.setLocale(locale);
+//		searchContext.setTimeZone(timeZone);
+		searchContext.setUserId(userId);
+
+		// DDLRecordSet
+		searchContext.setAttribute("recordSetId", recordSet.getRecordSetId());
+		searchContext.setAttribute(com.liferay.portal.kernel.search.Field.STATUS, 
+					approvedOnly? WorkflowConstants.STATUS_APPROVED: WorkflowConstants.STATUS_ANY);
+		searchContext.setAttribute("paginationType", "regular");
+		
+		// Attributes
+
+		Map<String, Serializable> attributes =
+			new HashMap<String, Serializable>();
+		searchContext.setAttributes(attributes);
+
+		// Query config
+
+		QueryConfig queryConfig = new QueryConfig();
+
+		queryConfig.setLocale(locale);
+
+		searchContext.setQueryConfig(queryConfig);
+
+		return searchContext;
+		
+	}
+	
+	public static DDLRecord addDDLRecord(long userId, DDLRecordSet recordSet, Map<String, Object> fieldValues,
+			boolean checkPermission) throws PortalException, SystemException {
+		ServiceContext serviceContext = new ServiceContext();
+		serviceContext.setAddGuestPermissions(true);
+		serviceContext.setAddGroupPermissions(true);
+		serviceContext.setUserId(userId);
+		serviceContext.setCompanyId(recordSet.getCompanyId());
+		serviceContext.setScopeGroupId(recordSet.getGroupId());
+		return addDDLRecord(recordSet, fieldValues, checkPermission, serviceContext);
+	}
+	
+	public static DDLRecord addDDLRecord(DDLRecordSet recordSet, Map<String, Object> fieldValues,
+			boolean checkPermission, ServiceContext serviceContext) throws PortalException, SystemException {
+		DDLRecordEditHelper helper = new DDLRecordEditHelper(serviceContext);
+		for ( Map.Entry<String,Object> entry: fieldValues.entrySet()) {
+			helper.setFieldValue(entry.getKey(), entry.getValue());
+		}
+		DDLRecord record = null;
+		try {
+			record = DDLUtil.updateRecord(
+					0, recordSet.getRecordSetId(), true, checkPermission, serviceContext);
+		} catch (PortalException e) {
+			throw e;
+		} catch (SystemException e) {
+			throw e;
+		} catch (Exception e) {
+			throw new SystemException("Unexpected exception when create DDL record", e);
+		}
+		// The returned record instance is not updated to the lasted status,
+		// so we need to load it again here.
+		record = DDLRecordLocalServiceUtil.getDDLRecord(record.getRecordId());
+		return record;
 	}
 	
 }

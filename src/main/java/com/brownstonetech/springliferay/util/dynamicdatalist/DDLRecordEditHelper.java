@@ -1,5 +1,10 @@
 package com.brownstonetech.springliferay.util.dynamicdatalist;
 
+import java.util.Calendar;
+import java.util.Date;
+import java.util.TimeZone;
+
+import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.service.ServiceContext;
 
@@ -10,12 +15,17 @@ public class DDLRecordEditHelper {
 	public static final String FIELD_NAMESPACE = "";
 	
 	private ServiceContext serviceContext;
+	private TimeZone timeZone;
 	
 	public DDLRecordEditHelper(ServiceContext serviceContext) {
 		this.serviceContext = serviceContext;
+		this.timeZone = serviceContext.getTimeZone();
+		if ( timeZone == null ) {
+			timeZone = TimeZone.getDefault();
+		}
 	}
 	
-	public void setFieldValue(String fieldName, String fieldValue) {
+	public void setFieldValue(String fieldName, Object fieldRawValue) {
 		/*
 		 * Logic is come from DDMImpl#getFieldNames(
 		 * String fieldNamespace, String fieldName,
@@ -59,8 +69,32 @@ public class DDLRecordEditHelper {
 			// replace attributeName with the resolved "instanced" attribute name
 			attributeName = instancedAttributeName;
 		}
+		// Handle Date
+//		if ( fieldRawValue == null ) return;
+		if ( fieldRawValue instanceof java.sql.Date) {
+			setDateFieldValue(attributeName, (Date)fieldRawValue, TimeZone.getDefault());
+			return;
+		} else if ( fieldRawValue instanceof Date ) {
+			setDateFieldValue(attributeName, (Date)fieldRawValue, timeZone);
+			return;
+		}
+		String fieldValue = StringPool.BLANK;
+		if ( fieldRawValue != null ) {
+			fieldValue = String.valueOf(fieldRawValue);
+		}
 		serviceContext.setAttribute(attributeName,
 				fieldValue);
+	}
+
+	private void setDateFieldValue(String attributeName, Date date, TimeZone timeZone) {
+		Calendar cal = Calendar.getInstance(timeZone);
+		cal.setTime(date);
+		int year = cal.get(Calendar.YEAR);
+		int month = cal.get(Calendar.MONTH);
+		int day = cal.get(Calendar.DAY_OF_MONTH);
+		serviceContext.setAttribute(attributeName +"Year", String.valueOf(year));
+		serviceContext.setAttribute(attributeName +"Month", String.valueOf(month));
+		serviceContext.setAttribute(attributeName +"Day", String.valueOf(day));
 	}
 
 }
