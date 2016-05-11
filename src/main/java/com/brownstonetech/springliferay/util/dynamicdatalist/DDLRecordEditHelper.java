@@ -4,25 +4,32 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.TimeZone;
 
+import com.liferay.portal.kernel.log.Log;
+import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.service.ServiceContext;
+import com.liferay.portlet.dynamicdatamapping.model.DDMStructure;
+import com.liferay.portlet.dynamicdatamapping.storage.FieldConstants;
 
 public class DDLRecordEditHelper {
 
 	public static final String FIELDS_DISPLAY_NAME = "_fieldsDisplay";
 	public static final String INSTANCE_SEPARATOR = "_INSTANCE_";
 	public static final String FIELD_NAMESPACE = "";
+	private static Log _log = LogFactoryUtil.getLog(DDLRecordEditHelper.class);
 	
 	private ServiceContext serviceContext;
+	private DDMStructure ddmStructure;
 	private TimeZone timeZone;
 	
-	public DDLRecordEditHelper(ServiceContext serviceContext) {
+	public DDLRecordEditHelper(DDMStructure ddmStructure, ServiceContext serviceContext) {
 		this.serviceContext = serviceContext;
 		this.timeZone = serviceContext.getTimeZone();
 		if ( timeZone == null ) {
 			timeZone = TimeZone.getDefault();
 		}
+		this.ddmStructure = ddmStructure;
 	}
 	
 	public void setFieldValue(String fieldName, Object fieldRawValue) {
@@ -70,12 +77,22 @@ public class DDLRecordEditHelper {
 			attributeName = instancedAttributeName;
 		}
 		// Handle Date
-//		if ( fieldRawValue == null ) return;
-		if ( fieldRawValue instanceof java.sql.Date) {
-			setDateFieldValue(attributeName, (Date)fieldRawValue, TimeZone.getDefault());
+		String fieldDataType;
+		try {
+			fieldDataType = ddmStructure.getFieldDataType(fieldName);
+		} catch (Exception e) {
+			_log.error("Fail to get fieldDataType of field "+fieldName+" in DDMStructure "+ddmStructure.getStructureId(), e);
 			return;
-		} else if ( fieldRawValue instanceof Date ) {
-			setDateFieldValue(attributeName, (Date)fieldRawValue, timeZone);
+		}
+		if (fieldDataType.equals(FieldConstants.DATE)) {
+			if ( fieldRawValue == null ) return;
+			if ( fieldRawValue instanceof java.sql.Date) {
+				setDateFieldValue(attributeName, (Date)fieldRawValue, TimeZone.getDefault());
+				return;
+			} else if ( fieldRawValue instanceof Date ) {
+				setDateFieldValue(attributeName, (Date)fieldRawValue, timeZone);
+				return;
+			}
 			return;
 		}
 		String fieldValue = StringPool.BLANK;
@@ -95,6 +112,9 @@ public class DDLRecordEditHelper {
 		serviceContext.setAttribute(attributeName +"Year", String.valueOf(year));
 		serviceContext.setAttribute(attributeName +"Month", String.valueOf(month));
 		serviceContext.setAttribute(attributeName +"Day", String.valueOf(day));
+		// Must have some value in the attributeName attribute, value doesnt' matter.
+		// otherwise the splitted y/m/d value will be ignored by DDMImpl.
+		serviceContext.setAttribute(attributeName, String.valueOf(date));
 	}
 
 }
