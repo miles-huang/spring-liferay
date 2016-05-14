@@ -29,6 +29,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
+import java.util.TreeMap;
 
 import com.brownstonetech.springliferay.exception.UnexpectedPortalException;
 import com.brownstonetech.springliferay.util.search.DDLSearchFormHelper;
@@ -523,6 +524,42 @@ public class DDLExtUtil extends DDLUtil {
 			}
 			columns.put(fieldName, columnModel);
 		}
+	}
+	
+	/**
+	 * Generate a column label map from entity columns definition.
+	 * <p>
+	 * The result map has key as column name, and value as column label.
+	 * </p>
+	 * @param columns Entity columns definition
+	 * @return
+	 */
+	private static Map<String,String> getColumnLabels(Map<String, Map<String, Serializable>> columns) {
+		Map<String, String> columnLabels = new TreeMap<String,String>();
+		for ( String columnName: columns.keySet() ) {
+			Map<String,Serializable> columnDef = columns.get(columnName);
+			String label = (String) columnDef.get(FieldConstants.LABEL);
+			columnLabels.put(columnName, "["+columnName+"] "+label);
+		}
+		return columnLabels;
+	}
+	
+	/**
+	 * Generate a column labels map from entity model definition
+	 * <p>
+	 * The result map has key as column name, and value as column label.
+	 * </p>
+	 * 
+	 * @param entityClass
+	 * @param languageId
+	 * @return
+	 * @throws SystemException 
+	 * @throws PortalException 
+	 */
+	public static Map<String,String> getColumnLabels(DDMStructure ddmStructure, String languageId) throws PortalException, SystemException {
+		Map<String, Map<String, Serializable>> columns = getColumns(ddmStructure, languageId);
+		Map<String, String> columnLabels = getColumnLabels(columns);
+		return columnLabels;
 	}
 	
 //	public static String getRecordMetaFieldDataType(String fieldName) {
