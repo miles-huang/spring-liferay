@@ -12,13 +12,13 @@ import com.liferay.portal.kernel.util.OrderByComparator;
 import com.liferay.portal.service.persistence.impl.BasePersistenceImpl;
 
 /**
- * This Helper provides convenient template to do JPQL search.
+ * This Helper provides convenient template to do HQL/JPQL search.
  * 
  * @author Miles Huang
  *
  * @param <R> Query result class, normally it would be an entity model class.
  */
-public abstract class JPQLQueryTemplate<R> extends BaseQueryTemplate {
+public abstract class ORMQueryTemplate<R> extends BaseQueryTemplate {
 	
 	protected BasePersistenceImpl<?> persistence;
 	
@@ -31,7 +31,7 @@ public abstract class JPQLQueryTemplate<R> extends BaseQueryTemplate {
 	 * @param defaultObc Default OrderByComparator. If no obc is provided when call runList method, this obc is used.
 	 * This parameter is nullable. Null defaultObc means use database default order when no obc is provided when runList.
 	 */
-	public JPQLQueryTemplate(BasePersistenceImpl<?> persistence,
+	public ORMQueryTemplate(BasePersistenceImpl<?> persistence,
 			CharSequence select, CharSequence from,
 			OrderByComparator defaultObc) {
 		super(select, from, defaultObc);
@@ -45,7 +45,7 @@ public abstract class JPQLQueryTemplate<R> extends BaseQueryTemplate {
 	 * @param select
 	 * @param from
 	 */
-	public JPQLQueryTemplate(BasePersistenceImpl<?> persistence,
+	public ORMQueryTemplate(BasePersistenceImpl<?> persistence,
 			CharSequence select,
 			CharSequence from) {
 		this(persistence, select, from, null);
