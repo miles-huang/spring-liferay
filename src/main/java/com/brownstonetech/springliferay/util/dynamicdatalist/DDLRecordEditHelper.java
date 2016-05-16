@@ -8,6 +8,7 @@ import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.kernel.util.StringUtil;
+import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.service.ServiceContext;
 import com.liferay.portlet.dynamicdatamapping.model.DDMStructure;
 import com.liferay.portlet.dynamicdatamapping.storage.FieldConstants;
@@ -17,6 +18,9 @@ public class DDLRecordEditHelper {
 	public static final String FIELDS_DISPLAY_NAME = "_fieldsDisplay";
 	public static final String INSTANCE_SEPARATOR = "_INSTANCE_";
 	public static final String FIELD_NAMESPACE = "";
+	private static final String LANUGAGE_ID_KEY = "languageId";
+	private static final String DEFAULT_LANGUAGE_ID_KEY = "defaultLanguageId";
+	
 	private static Log _log = LogFactoryUtil.getLog(DDLRecordEditHelper.class);
 	
 	private ServiceContext serviceContext;
@@ -25,6 +29,18 @@ public class DDLRecordEditHelper {
 	
 	public DDLRecordEditHelper(DDMStructure ddmStructure, ServiceContext serviceContext) {
 		this.serviceContext = serviceContext;
+		String languageId = ddmStructure.getDefaultLanguageId();
+
+		if (Validator.isNull(serviceContext.getLanguageId())) {
+			serviceContext.setLanguageId(languageId);
+		}
+		if (Validator.isNull(serviceContext.getAttribute(LANUGAGE_ID_KEY))) {
+			serviceContext.setAttribute(LANUGAGE_ID_KEY, languageId);
+		}
+		if (Validator.isNull(serviceContext.getAttribute(DEFAULT_LANGUAGE_ID_KEY))) {
+			serviceContext.setAttribute(DEFAULT_LANGUAGE_ID_KEY, ddmStructure.getDefaultLanguageId());
+		}
+		
 		this.timeZone = serviceContext.getTimeZone();
 		if ( timeZone == null ) {
 			timeZone = TimeZone.getDefault();
@@ -112,7 +128,7 @@ public class DDLRecordEditHelper {
 		serviceContext.setAttribute(attributeName +"Year", String.valueOf(year));
 		serviceContext.setAttribute(attributeName +"Month", String.valueOf(month));
 		serviceContext.setAttribute(attributeName +"Day", String.valueOf(day));
-		// Must have some value in the attributeName attribute, value doesnt' matter.
+		// Must set some value in the attributeName attribute, value doesnt' matter.
 		// otherwise the splitted y/m/d value will be ignored by DDMImpl.
 		serviceContext.setAttribute(attributeName, String.valueOf(date));
 	}
