@@ -800,7 +800,7 @@ public class DDLExtUtil extends DDLUtil {
 	
 	public static DDLRecord addDDLRecord(DDLRecordSet recordSet, Map<String, Object> fieldValues,
 			boolean checkPermission, ServiceContext serviceContext) throws PortalException, SystemException {
-		DDLRecordEditHelper helper = new DDLRecordEditHelper(recordSet.getDDMStructure(), serviceContext);
+		DDLRecordEditHelper helper = new DDLRecordEditHelper(recordSet, serviceContext);
 		for ( Map.Entry<String,Object> entry: fieldValues.entrySet()) {
 			helper.setFieldValue(entry.getKey(), entry.getValue());
 		}

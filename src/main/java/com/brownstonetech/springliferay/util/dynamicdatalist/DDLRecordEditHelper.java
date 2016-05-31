@@ -4,12 +4,15 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.TimeZone;
 
+import com.liferay.portal.kernel.exception.PortalException;
+import com.liferay.portal.kernel.exception.SystemException;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.service.ServiceContext;
+import com.liferay.portlet.dynamicdatalists.model.DDLRecordSet;
 import com.liferay.portlet.dynamicdatamapping.model.DDMStructure;
 import com.liferay.portlet.dynamicdatamapping.storage.FieldConstants;
 
@@ -27,9 +30,10 @@ public class DDLRecordEditHelper {
 	private DDMStructure ddmStructure;
 	private TimeZone timeZone;
 	
-	public DDLRecordEditHelper(DDMStructure ddmStructure, ServiceContext serviceContext) {
+	public DDLRecordEditHelper(DDLRecordSet recordSet, ServiceContext serviceContext) throws PortalException, SystemException {
+		this.ddmStructure = recordSet.getDDMStructure();
 		this.serviceContext = serviceContext;
-		String languageId = ddmStructure.getDefaultLanguageId();
+		String languageId = recordSet.getDefaultLanguageId();
 
 		if (Validator.isNull(serviceContext.getLanguageId())) {
 			serviceContext.setLanguageId(languageId);
