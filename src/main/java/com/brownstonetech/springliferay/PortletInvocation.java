@@ -12,6 +12,7 @@ import javax.portlet.WindowState;
 import javax.servlet.ServletContext;
 
 import com.liferay.portal.kernel.exception.SystemException;
+import com.liferay.portal.kernel.json.JSONFactoryUtil;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.portlet.LiferayPortletURL;
@@ -103,6 +104,10 @@ public class PortletInvocation implements Serializable {
 		String portletId = getThemeDisplay().getPpid();
 		if ( Validator.isNull(portletId)) {
 			portletId = getThemeDisplay().getPortletDisplay().getId();
+		}
+		if ( Validator.isNull(portletId)) {
+			_log.warn("Can't parse portletId for request: "+this.getURLCurrent()
+				+"\nthemeDisplay: "+JSONFactoryUtil.looseSerializeDeep(themeDisplay));
 		}
 		return portletId;
 	}
