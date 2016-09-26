@@ -1,5 +1,7 @@
 package com.brownstonetech.springliferay.util.scripting;
 
+import java.util.Arrays;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
@@ -15,6 +17,7 @@ import com.brownstonetech.springliferay.exception.ErrorMessageException;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.exception.SystemException;
 import com.liferay.portal.kernel.log.Log;
+import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.scripting.ScriptingException;
 import com.liferay.portal.kernel.scripting.ScriptingHelperUtil;
 import com.liferay.portal.kernel.scripting.ScriptingUtil;
@@ -37,6 +40,7 @@ import com.liferay.portal.theme.ThemeDisplay;
 public class DynamicScriptingUtil {
 
 	private static final String SCRIPT_CONTEXT_KEY = "com.brownstonetech.springliferay.script.context";
+	private static Log _log = LogFactoryUtil.getLog(DynamicScriptingUtil.class);
 	
 	/**
 	 * Run an controller extension script with controller script content
@@ -55,7 +59,7 @@ public class DynamicScriptingUtil {
 			final Map<String,Object> additionalVariables, final Map<String, Object> modelMap,
 			final Log logger)
 			throws PortalException, SystemException {
-		runScript(portletInvocation,
+		runCachedScript(portletInvocation,
 					scriptGroupId, scriptKey, new ScriptHandler() {
 
 				public Set<String> getOutputVariables() { return null; }
@@ -73,7 +77,7 @@ public class DynamicScriptingUtil {
 		});
 	}
 	
-	public static void runScript(PortletInvocation portletInvocation,
+	public static void runCachedScript(PortletInvocation portletInvocation,
 			long scriptGroupId, String scriptKey, ScriptHandler handler)
 					throws PortalException, SystemException {
 		try {
@@ -86,19 +90,39 @@ public class DynamicScriptingUtil {
 			CachedScript cachedScript = ScriptCacheUtil.getScript(cacheKey, 
 					scriptGroupId, preferences, scriptKey, 
 					portletId);
-			Map<String, Object> scriptContext = null;
 			if ( cachedScript != null ) {
-				scriptContext = populateScriptingContext(portletInvocation.getPortletConfig(),
-						portletRequest, portletResponse);
-				handler.populateAdditionalScriptContext(scriptContext);
-				Map<String, Object> ret = ScriptingUtil.eval(null, scriptContext,
-						handler.getOutputVariables(), "groovy", cachedScript.getScript(),
-						ClassLoaderPool.getContextName(Thread.currentThread().getContextClassLoader()),
-						ClassLoaderPool.getContextName(PortalClassLoaderUtil.getClassLoader())
-						);
-				handler.handleScriptResult(ret);
+				String script = cachedScript.getScript();
+				runScriptForRequest(portletInvocation, portletRequest, portletResponse, script, handler);
 			}
+		} catch (PortalException e) {
+			throw new PortalException("Unexpected ScriptingException while running script: scriptGroupId="+scriptGroupId+", scriptKey="+scriptKey, e);
+		} catch (SystemException e) {
+			throw new SystemException("Unexpected ScriptingException while running script: scriptGroupId="+scriptGroupId+", scriptKey="+scriptKey, e);
+		}
+	}
+
+	public static void runScriptForRequest(PortletInvocation portletInvocation, PortletRequest portletRequest,
+			PortletResponse portletResponse, String script, ScriptHandler handler)
+			throws SystemException, PortalException {
+		Map<String, Object> scriptContext = populateScriptingContext(portletInvocation.getPortletConfig(),
+				portletRequest, portletResponse);
+		handler.populateAdditionalScriptContext(scriptContext);
+		runScript(scriptContext, script, handler);
+	}
+	
+	public static void runScript(Map<String,Object> scriptContext, String script, ScriptHandler handler)
+			throws SystemException, PortalException {
+		try {
+			Map<String, Object> ret = ScriptingUtil.eval(null, scriptContext,
+					handler.getOutputVariables(), "groovy", script,
+					ClassLoaderPool.getContextName(Thread.currentThread().getContextClassLoader()),
+					ClassLoaderPool.getContextName(PortalClassLoaderUtil.getClassLoader())
+					);
+			handler.handleScriptResult(ret);
 		} catch (ScriptingException e) {
+			if ( _log.isDebugEnabled() ) {
+				_log.debug("Error when running script: "+script);
+			}
 			Throwable cause = e.getCause();
 			if ( cause instanceof PortalException ) {
 				PortalException msg = (PortalException) cause;
@@ -108,8 +132,32 @@ public class DynamicScriptingUtil {
 				SystemException msg = (SystemException) cause;
 				throw msg;
 			}
-			throw new SystemException("Unexpected ScriptingException while running script: scriptGroupId="+scriptGroupId+", scriptKey="+scriptKey, e);
+			throw new SystemException("Unexpected ScriptingException while running script", e);
 		}
+	}
+	
+	public static Map<String, Object> evalScript(Map<String,Object> scriptContext, String script, final Log logger, final String...outputVariables)
+			throws SystemException, PortalException {
+		@SuppressWarnings("unchecked")
+		final Map<String,Object>[] ret = new Map[1];
+		runScript(scriptContext, script, new ScriptHandler() {
+			public Set<String> getOutputVariables() { 
+				if ( outputVariables.length == 0 ) return null;
+				Set<String> outputVariablesSet = new HashSet<String>(Arrays.asList(outputVariables));
+				return outputVariablesSet;
+			}
+
+			public void populateAdditionalScriptContext(
+					Map<String, Object> scriptContext) {
+				scriptContext.put("_log", logger);
+			}
+
+			public void handleScriptResult(Map<String, Object> result) {
+				ret[0] = result;
+			}
+
+		});
+		return ret[0];
 	}
 	
 	private static Map<String, Object> populateScriptingContext(
