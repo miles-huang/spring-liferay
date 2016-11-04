@@ -128,6 +128,19 @@ public class PortalExtUtil {
 	}
 	
 	/**
+	 * Get a portletUniqueId for a company scoped portlet configuration
+	 * @param companyId
+	 * @param rootPortletId
+	 * @return
+	 */
+	public static String getPortletUniqueId(long companyId, String rootPortletId) {
+		String portletUniqueId = new StringBundler(4)
+				.append(rootPortletId).append("_")
+				.append("CO").append(companyId).toString();
+		return portletUniqueId;
+	}
+	
+	/**
 	 * Hide the portlet from display.
 	 * Notice this method only applicable for Render phase portlet request.
 	 * Calling this method in other phase has no effect.
