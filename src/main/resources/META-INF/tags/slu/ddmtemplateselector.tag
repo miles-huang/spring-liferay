@@ -44,7 +44,8 @@ manage application to create/edit existing templates" %>
 	description="The perference name (suffix) used for storing configured preference. Default is 'DisplayStyle'" %>
 <%@ attribute name="manageLinkLabel" required="false" rtexprvalue="true" type="String"
 	description="Label resource key for display ddmTempalte manage link. Default is 'manage-display-templates-for-x'" %>
-
+<%@ attribute name="viewDefaultTemplateLabel" required="false" rtexprvalue="true" type="String"
+	description="Label resource key for view default template link. Default is 'default'" %>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
  
 <%@ taglib uri="http://java.sun.com/portlet_2_0" prefix="portlet" %>
@@ -310,6 +311,7 @@ if ( null == showTemplateUpdateLink ) showTemplateUpdateLink = true;
 if ( Validator.isNull(formName)) formName = "fm";
 if ( null == manageLinkLabel) manageLinkLabel = "manage-display-templates-for-x";
 if ( null == emptyOptionLabel ) emptyOptionLabel = "default";
+if ( null == viewDefaultTemplateLabel ) viewDefaultTemplateLabel = "default";
 
 long ddmTemplateGroupId = PortletDisplayTemplateUtil.getDDMTemplateGroupId(themeDisplay.getScopeGroupId());
 
@@ -547,7 +549,7 @@ if (Validator.isNotNull(referenceTemplateURI)) {
 	id='<%= "viewBaseTemplate"+preferenceNamePrefix %>'
 	iconCssClass="icon-book"
 	label="<%= true %>"
-	message='label.dem.view-example'
+	message='<%= viewDefaultTemplateLabel %>'
 	url="<%= url %>"
 	target="_blank"
 />
