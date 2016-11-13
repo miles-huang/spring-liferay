@@ -36,6 +36,10 @@ public class LiferayControllerSupport implements PortletConfigAware {
 	public void setPortletConfig(PortletConfig portletConfig) {
 		this.portletConfig = portletConfig;
 	}
+	
+	public PortletConfig getPortletConfig() {
+		return portletConfig;
+	}
 
 	@ExceptionHandler({ Exception.class })
 	public String handleException(Exception exception) {
