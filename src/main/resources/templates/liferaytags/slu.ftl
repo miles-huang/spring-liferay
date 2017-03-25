@@ -61,6 +61,15 @@
 	<#assign permissionContextValue=prevPermissionContext />
 </#macro>
 
+<#--
+ * Get User domain model from userId
+ * return null if the userId doesnt' exists
+ * userId: user's userId
+-->
+<#function getUser userId >
+	<#return slputils.renderHelper.getUser(userId) />
+</#function>
+
 <#-- 
  * Convert any object to its string representation
  * using the object's toString method.

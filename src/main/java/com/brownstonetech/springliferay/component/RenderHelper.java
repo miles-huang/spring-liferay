@@ -9,9 +9,14 @@ import javax.portlet.PortletRequest;
 
 import org.springframework.stereotype.Component;
 
+import com.liferay.portal.kernel.exception.PortalException;
+import com.liferay.portal.kernel.exception.SystemException;
 import com.liferay.portal.kernel.json.JSONFactoryUtil;
 import com.liferay.portal.kernel.servlet.SessionErrors;
 import com.liferay.portal.kernel.servlet.SessionMessages;
+import com.liferay.portal.model.User;
+import com.liferay.portal.service.UserLocalServiceUtil;
+import com.liferay.portal.service.persistence.UserUtil;
 import com.liferay.taglib.aui.AUIUtil;
 
 @Component("renderHelper")
@@ -91,4 +96,14 @@ public class RenderHelper implements Serializable {
 		return getDate(calendar);
 	}
 	
+	public User getUser(long userId) {
+		try {
+			User user = UserLocalServiceUtil.getUser(userId);
+			return user;
+		} catch (PortalException e) {
+			return null;
+		} catch (SystemException e) {
+			return null;
+		}
+	}
 }
