@@ -70,6 +70,14 @@
 	<#return slputils.renderHelper.getUser(userId) />
 </#function>
 
+<#function isUserHasRole userId roleName>
+	<#return slputils.renderHelper.isUserHasRole(userId, roleName) />
+</#function>
+
+<#function isUserHasGroupRole userId roleName groupId>
+	<#return slputils.renderHelper.isUserHasGroupRole(userId, roleName, groupId) />
+</#function>
+
 <#-- 
  * Convert any object to its string representation
  * using the object's toString method.
