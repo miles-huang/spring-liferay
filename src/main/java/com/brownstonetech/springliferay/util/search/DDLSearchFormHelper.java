@@ -54,6 +54,11 @@ public class DDLSearchFormHelper extends SearchFormHelper {
 	}
 
 	@Override
+	protected String encodeNumericRangeIndexFieldName(String indexFieldName) {
+		return indexFieldName+"_Number_sortable";
+	}
+	
+	@Override
 	protected String getIndexFieldName(String propertyPath, String propertyName, boolean like)
 			throws PortalException, SystemException {
 		if ( Validator.isNull(propertyPath)) {
@@ -77,7 +82,7 @@ public class DDLSearchFormHelper extends SearchFormHelper {
 	 * <p>
 	 * The key of search terms is treated as DDL record field name, with optional
 	 * suffixes:
-	 * <table>
+	 * <table summary="Special search field name suffix">
 	 * <tr><th>Suffix</th><th>Description</th></tr>
 	 * <tr><th></th><td>No suffix means equals match</td></tr>
 	 * <tr><th>_eq</th><td>Same as no suffix equals match</td></tr>

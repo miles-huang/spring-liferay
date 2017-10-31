@@ -268,7 +268,6 @@ public class SearchFormHelper {
 	 * @param propertyName the property name of the field. If the property defined in the
 	 * search form bean contains search operator suffix, such suffix is not included in the
 	 * passed in propertyName parameter.
-	 * @param locale Search in specified locale.
 	 * @param lowerCase is the search need to use lower case indexed field for example like search
 	 * @return the index field name for the search field.
 	 * @throws SystemException 
@@ -374,6 +373,11 @@ public class SearchFormHelper {
 			lower = true;
 			upper = true;
 		}
+_log.info("Search parameter value class is "+valueClass);
+		if (Number.class.isAssignableFrom(valueClass)) {
+			indexFieldName=encodeNumericRangeIndexFieldName(indexFieldName);
+		}
+_log.info("indexFieldName="+indexFieldName);
 		Query term = TermRangeQueryFactoryUtil.create(searchContext, indexFieldName,
 				strLowerTerm, strUpperTerm, lower, upper);
 		try {
@@ -393,6 +397,10 @@ public class SearchFormHelper {
 		} catch (ParseException e) {
 			_log.error("Failed to add range query for field "+indexFieldName, e);
 		}
+	}
+
+	protected String encodeNumericRangeIndexFieldName(String indexFieldName) {
+		return indexFieldName;
 	}
 
 	private void addLikeQueryTerm(BooleanQuery dynaFieldQuery, boolean andOperator,
