@@ -39,7 +39,7 @@ public class DDMKeywordIndexerUtil {
 	/**
 	 * Simply add an indexed single value keyword field to the document.
 	 * Logic is same as
-	 * {@link com.liferay.portal.kernel.search.DocumentImpl.createKeywordField(String, String, boolean)}
+	 * {@link com.liferay.portal.kernel.search.DocumentImpl#createKeywordField(String, String, boolean)}
 	 * but that method is not public accessible.
 	 * 
 	 * @param document

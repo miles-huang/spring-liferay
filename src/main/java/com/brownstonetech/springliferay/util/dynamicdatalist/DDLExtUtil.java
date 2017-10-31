@@ -550,7 +550,7 @@ public class DDLExtUtil extends DDLUtil {
 	 * The result map has key as column name, and value as column label.
 	 * </p>
 	 * 
-	 * @param entityClass
+	 * @param ddmStructure
 	 * @param languageId
 	 * @return
 	 * @throws SystemException 
@@ -701,7 +701,7 @@ public class DDLExtUtil extends DDLUtil {
 	 *  false: return any records disregard the status of the record.
 	 * @param start Start index for the pagination, index start from 0
 	 * @param end End index for the pagination, index start from 0 exclusive.
-	 * If any of the start or end parameter have value {@link QueryUtil.ALL_POS},
+	 * If any of the start or end parameter have value {@link com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS},
 	 * the pagination is disabled and all records will be returned.
 	 * @return List of DDL records found match with the searchCriteria.
 	 * @throws SystemException

@@ -28,6 +28,9 @@ public class LiferayMessageSource implements MessageSource {
 	 * even when not defining argument placeholders, you need to set this
 	 * flag to "true". Else, only message texts with actual arguments
 	 * are supposed to be written with MessageFormat escaping.
+	 * 
+	 * @param alwaysUseMessageFormat
+	 * 
 	 * @see java.text.MessageFormat
 	 */
 	public void setAlwaysUseMessageFormat(boolean alwaysUseMessageFormat) {
@@ -37,6 +40,8 @@ public class LiferayMessageSource implements MessageSource {
 	/**
 	 * Return whether to always apply the MessageFormat rules, parsing even
 	 * messages without arguments.
+	 * 
+	 * @return
 	 */
 	protected boolean isAlwaysUseMessageFormat() {
 		return this.alwaysUseMessageFormat;
@@ -57,6 +62,9 @@ public class LiferayMessageSource implements MessageSource {
 	 * to delegate to the internal {@link #getMessageInternal} method if available.
 	 * In general, it is recommended to just use "useCodeAsDefaultMessage" during
 	 * development and not rely on it in production in the first place, though.
+	 * 
+	 * @param useCodeAsDefaultMessage
+	 * 
 	 * @see #getMessage(String, Object[], Locale)
 	 * @see org.springframework.validation.FieldError
 	 */
@@ -70,6 +78,9 @@ public class LiferayMessageSource implements MessageSource {
 	 * Default is "false".
 	 * <p>Alternatively, consider overriding the {@link #getDefaultMessage}
 	 * method to return a custom fallback message for an unresolvable code.
+	 * 
+	 * @return
+	 * 
 	 * @see #getDefaultMessage(String)
 	 */
 	protected boolean isUseCodeAsDefaultMessage() {
@@ -81,7 +92,7 @@ public class LiferayMessageSource implements MessageSource {
 	 * @param locale the Locale to resolve the code for
 	 * (subclasses are encouraged to support internationalization)
 	 * @return the message String, or {@code null} if not found
-	 * @see #resolveCode
+	 * 
 	 * @see java.text.MessageFormat
 	 */
 	protected String resolveCodeWithoutArguments(String code, Locale locale) {

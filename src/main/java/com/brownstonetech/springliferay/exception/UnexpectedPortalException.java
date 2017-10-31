@@ -69,7 +69,6 @@ public class UnexpectedPortalException extends SystemException {
 	}
 
 	/**
-	 * @param msgKey
 	 * @param cause
 	 */
 	public UnexpectedPortalException(PortalException cause) {

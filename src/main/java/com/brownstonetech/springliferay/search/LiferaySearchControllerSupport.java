@@ -109,6 +109,9 @@ public abstract class LiferaySearchControllerSupport<E, S extends DisplayTerms> 
 	 * @param portletRequest
 	 * @param mimeResponse
 	 * @param searchTerms
+	 * @param defaultDelta
+	 * @param deltaConfigurable
+	 * 
 	 * @return
 	 */
 	protected SearchContainer<E> createSearchContainer(PortletRequest portletRequest, MimeResponse mimeResponse,
@@ -153,7 +156,7 @@ public abstract class LiferaySearchControllerSupport<E, S extends DisplayTerms> 
 	protected abstract S createSearchTerms(PortletRequest portletRequest);
 	
 	/**
-	 * Subclasses need to implement this doSearch method by
+	 * <p>Subclasses need to implement this doSearch method by
 	 * searching the entity according to the user defined searchTerms and searchContainer
 	 * provided search conditions.</p>
 	 * <p>
@@ -167,6 +170,7 @@ public abstract class LiferaySearchControllerSupport<E, S extends DisplayTerms> 
 	 * </p>
 	 * <p>
 	 * To support pagination using values from searchContainer:
+	 * </p>
 	 * <ul>
 	 * <li>
 	 * {@link SearchContainer#getStart()}</li>
@@ -175,15 +179,15 @@ public abstract class LiferaySearchControllerSupport<E, S extends DisplayTerms> 
 	 * </ul>
 	 * <p>
 	 * To support sorting using these values from searchContainer:</p>
-	 * <p>For indexer based search, the sorting representing {@link Sort} bean
-	 * can be populated from searchContainer using {@link SortFactoryUtil#getSort(Class, String, String)} method.
+	 * <p>For indexer based search, the sorting representing {@link com.liferay.portal.kernel.search.Sort} bean
+	 * can be populated from searchContainer using {@link com.liferay.portal.kernel.search.SortFactoryUtil#getSort(Class, String, String)} method.
 	 * For example:</p>
 	 * <code>Sort sort = SortFactoryUtil#getSort(User.class, searchContainer.getOrderByCol(), searchContainer.getOrderByType());</code>
 	 * <ul>
 	 * <li>{@link SearchContainer#getOrderByCol()}</li>
 	 * <li>{@link SearchContainer#getOrderByType()}</li>
 	 * </ul>
-	 * <p>For Database backed search, the {@link OrderByComparator} bean can be
+	 * <p>For Database backed search, the {@link com.liferay.client.soap.portal.kernel.util.OrderByComparator} bean can be
 	 * get from searchContainer directly:</p>
 	 * <ul>
 	 * <li>{@link SearchContainer#getOrderByComparator()}</li>
@@ -197,6 +201,8 @@ public abstract class LiferaySearchControllerSupport<E, S extends DisplayTerms> 
 	 * 
 	 * @param searchTerms
 	 * Application defined bean to hold search condition field values.
+	 * @param bindingResult
+	 * 
 	 * @param modelMap
 	 * Get model attributes and update model attribute via modelMap
 	 * 
@@ -215,7 +221,6 @@ public abstract class LiferaySearchControllerSupport<E, S extends DisplayTerms> 
 
 	/**
 	 * Subclass override this method to do initializations before render
-	 * @param portletInvocation
 	 * @param command
 	 * @param bindingResult
 	 * @param modelMap

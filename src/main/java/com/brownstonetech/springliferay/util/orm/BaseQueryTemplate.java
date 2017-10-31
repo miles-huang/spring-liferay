@@ -54,15 +54,15 @@ public abstract class BaseQueryTemplate {
 	}
 
 	/**
-	 * Subclass must implement this method to provide WHERE clause of 
-	 * the query.<p/>
-	 * When adding where clause require query parameter, add the parameter
+	 * <p>Subclass must implement this method to provide WHERE clause of 
+	 * the query.</p>
+	 * <p>When adding where clause require query parameter, add the parameter
 	 * value to the params list. Each 
 	 * '?' place holder in the return query clause must correspond to a
-	 * parameter in the params list in right order.<p/>
-	 * If the query from clause contains join part, and requires parameter,
+	 * parameter in the params list in right order.</p>
+	 * <p>If the query from clause contains join part, and requires parameter,
 	 * add the required parameter into the params list before any parameter
-	 * for the where clause.<p/>
+	 * for the where clause.</p>
 	 * @param params the list receive query query parameter.
 	 * @return the query where clause without WHERE keyword.
 	 */

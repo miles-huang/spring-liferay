@@ -20,7 +20,10 @@ import org.springframework.util.StringUtils;
  * {@code binder.registerCustomEditor}.
  *
  * @author Miles Huang
- * @see java.util.Date,java.sql.Date,java.sql.Timestamp,java.sql.Time
+ * @see java.util.Date
+ * @see java.sql.Date
+ * @see java.sql.Timestamp
+ * @see java.sql.Time
  * @see java.text.DateFormat
  * @see org.springframework.validation.DataBinder#registerCustomEditor
  */

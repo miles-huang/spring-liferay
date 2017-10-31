@@ -44,10 +44,8 @@ public class PortalExtUtil {
 	/**
 	 * Get portletConfig from portletRequest object.
 	 * 
-	 * @param request
+	 * @param portletRequest
 	 * @return
-	 * @throws SystemException
-	 * @throws PortletException
 	 */
 //	public static PortletConfig getPortletConfig(PortletRequest request) throws SystemException, PortletException {
 //		ServletContext servletContext = getServletContext(request);
@@ -158,6 +156,7 @@ public class PortalExtUtil {
 	/**
 	 * Dynamically set the portlet title.
 	 * This method can only be called in render phase.
+	 * @param renderResponse
 	 * @param title
 	 */
 	public static void setPortletTitle(PortletResponse renderResponse, String title) {

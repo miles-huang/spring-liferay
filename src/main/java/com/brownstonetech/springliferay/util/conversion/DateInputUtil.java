@@ -24,6 +24,7 @@ public class DateInputUtil {
 	 * liferay-ui:input-date used date format.
 	 * 
 	 * @param request
+	 * @param locale
 	 * @return
 	 */
 	public static DateFormat getDateInputFormat(HttpServletRequest request, Locale locale) {

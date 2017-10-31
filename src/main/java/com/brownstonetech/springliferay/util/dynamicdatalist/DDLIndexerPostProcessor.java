@@ -20,7 +20,8 @@ import com.liferay.portlet.dynamicdatamapping.storage.StorageEngineUtil;
 
 /**
  * This post processor complements the LP 6.2 built in
- * {@link com.liferay.portlet.dynamicdatamapping.util.DDMIndexerImpl}
+ * <code> com.liferay.portlet.dynamicdatamapping.util.DDMIndexerImpl </code>
+ * <p>
  * In this post processor, we add all keyword indexed text fields
  * with corresponding lower case indexed field so that case insensitive
  * search against keyword indexed text field can be implemented.
